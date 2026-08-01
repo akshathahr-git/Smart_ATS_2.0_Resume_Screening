@@ -1,10 +1,26 @@
-# app.py - Smart ATS — Final (full version with requested enhancements)
+# app.py - Smart ATS — Professional Version (Final)
 import streamlit as st
 import os, re, io, hashlib, json, math
 import PyPDF2
 import pandas as pd
 from difflib import SequenceMatcher
 import nltk
+
+# Download NLTK resources
+resources = [
+    ("tokenizers/punkt", "punkt"),
+    ("tokenizers/punkt_tab", "punkt_tab"),
+    ("taggers/averaged_perceptron_tagger", "averaged_perceptron_tagger"),
+    ("taggers/averaged_perceptron_tagger_eng", "averaged_perceptron_tagger_eng"),
+    ("corpora/stopwords", "stopwords"),
+]
+
+for path, name in resources:
+    try:
+        nltk.data.find(path)
+    except LookupError:
+        nltk.download(name)
+
 from nltk.corpus import stopwords
 from nltk.stem import WordNetLemmatizer
 from nltk import pos_tag, word_tokenize
@@ -20,7 +36,7 @@ import textwrap
 import warnings
 warnings.filterwarnings("ignore")
 
-# Optional OpenAI integration (if you set OPENAI_API_KEY in env)
+# Optional OpenAI integration
 OPENAI_API_KEY = os.environ.get("OPENAI_API_KEY")
 if OPENAI_API_KEY:
     try:
@@ -57,26 +73,175 @@ SYNONYMS = {
     "tensorflow": ["tf"],
     "scikit-learn": ["sklearn"],
     "tableau": ["power bi dashboards", "powerbi", "power bi"],
-    # expand as needed
+    "power bi": ["powerbi", "tableau"],
+    "aws": ["amazon web services"],
+    "gcp": ["google cloud platform"],
 }
 
 # ---------- constants ----------
-MAX_RESUMES = 100  # capacity limit
+MAX_RESUMES = 100
 
-# ---------- UI CSS ----------
-st.set_page_config(page_title="Smart ATS — Enhanced", layout="wide")
+# ---------- Professional UI CSS ----------
+st.set_page_config(
+    page_title="HireVision AI - Smart ATS", 
+    page_icon="🎯",
+    layout="wide"
+)
+
 CSS = """
-:root{
-  --accent1: #6C63FF;
-  --accent2: #FF5A7A;
-}
-.header { background: linear-gradient(90deg, var(--accent1), var(--accent2)); padding:18px; border-radius:12px; color:#ffffff; font-weight:700; font-size:22px; text-align:center; margin-bottom:18px;}
-.card { background: #f5f7ff10; padding:12px; border-radius:10px; margin-bottom:10px; }
+<style>
+    /* Remove default Streamlit padding */
+    .main > div {
+        padding-top: 0rem;
+        padding-bottom: 0rem;
+    }
+    
+    /* Professional white background */
+    .stApp {
+        background-color: #ffffff;
+    }
+    
+    /* Header styling */
+    .header {
+        background: linear-gradient(135deg, #1a1a2e 0%, #16213e 50%, #0f3460 100%);
+        padding: 20px 30px;
+        border-radius: 12px;
+        color: #ffffff;
+        font-weight: 700;
+        font-size: 24px;
+        text-align: center;
+        margin-bottom: 20px;
+        box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+        letter-spacing: 0.5px;
+    }
+    
+    .header span {
+        color: #e94560;
+    }
+    
+    /* Card styling */
+    .card {
+        background: #f8f9fa;
+        padding: 15px 20px;
+        border-radius: 10px;
+        margin-bottom: 12px;
+        border-left: 4px solid #0f3460;
+        box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+        transition: transform 0.2s;
+    }
+    
+    .card:hover {
+        transform: translateX(5px);
+        box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+    }
+    
+    /* Sidebar styling */
+    .css-1d391kg {
+        background-color: #f8f9fa;
+    }
+    
+    /* Button styling */
+    .stButton > button {
+        background: linear-gradient(135deg, #0f3460, #16213e);
+        color: white;
+        border: none;
+        border-radius: 8px;
+        padding: 0.5rem 1.5rem;
+        font-weight: 600;
+        transition: all 0.3s;
+    }
+    
+    .stButton > button:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 6px 20px rgba(15, 52, 96, 0.3);
+        background: linear-gradient(135deg, #16213e, #0f3460);
+    }
+    
+    /* Password input without suggestions */
+    input[type="password"] {
+        -webkit-text-security: disc !important;
+    }
+    
+    /* Hide browser password manager icons */
+    input[type="password"]::-ms-reveal,
+    input[type="password"]::-ms-clear {
+        display: none !important;
+    }
+    
+    /* Metric cards */
+    .metric-card {
+        background: white;
+        padding: 20px;
+        border-radius: 10px;
+        box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+        border: 1px solid #e9ecef;
+        text-align: center;
+    }
+    
+    /* Tab styling */
+    .stTabs [data-baseweb="tab-list"] {
+        gap: 8px;
+        background-color: #f8f9fa;
+        padding: 8px;
+        border-radius: 10px;
+    }
+    
+    .stTabs [data-baseweb="tab"] {
+        border-radius: 8px;
+        padding: 8px 20px;
+        background-color: transparent;
+        color: #495057;
+        font-weight: 500;
+    }
+    
+    .stTabs [aria-selected="true"] {
+        background-color: #0f3460 !important;
+        color: white !important;
+    }
+    
+    /* Success/Warning/Info messages */
+    .stAlert {
+        border-radius: 8px;
+        border-left: 4px solid;
+    }
+    
+    /* Footer */
+    .footer {
+        text-align: center;
+        font-size: 12px;
+        color: #6c757d;
+        padding: 20px 0;
+        border-top: 1px solid #e9ecef;
+        margin-top: 30px;
+    }
+    
+    /* Hide Streamlit branding */
+    #MainMenu {visibility: hidden;}
+    footer {visibility: hidden;}
+    
+    /* Custom scrollbar */
+    ::-webkit-scrollbar {
+        width: 8px;
+    }
+    ::-webkit-scrollbar-track {
+        background: #f1f1f1;
+        border-radius: 10px;
+    }
+    ::-webkit-scrollbar-thumb {
+        background: #0f3460;
+        border-radius: 10px;
+    }
+    ::-webkit-scrollbar-thumb:hover {
+        background: #16213e;
+    }
+</style>
 """
-st.markdown(f"<style>{CSS}</style>", unsafe_allow_html=True)
 
+st.markdown(CSS, unsafe_allow_html=True)
+
+# Header
 st.markdown(
-    "<div class='header'>HireVision AI – Intelligent Resume Analyzer</div>",
+    "<div class='header'>🎯 HireVision <span>AI</span> – Intelligent Resume Analyzer</div>",
     unsafe_allow_html=True
 )
 
@@ -149,16 +314,13 @@ def tokenize_resume(text):
 def match_skills(jd_tokens, resume_tokens):
     matched = set()
     for s in jd_tokens:
-        # exact match
         if s in resume_tokens:
             matched.add(s)
             continue
-        # synonyms mapping
         syns = SYNONYMS.get(s, [])
         if any(normalize(syn) in resume_tokens for syn in syns):
             matched.add(s)
             continue
-        # reverse check
         for k, v in SYNONYMS.items():
             if s == normalize(k):
                 if any(normalize(x) in resume_tokens for x in v):
@@ -166,7 +328,6 @@ def match_skills(jd_tokens, resume_tokens):
                     break
         if s in matched:
             continue
-        # fuzzy match fallback
         for r in resume_tokens:
             if SequenceMatcher(None, s, r).ratio() >= 0.82:
                 matched.add(s)
@@ -174,8 +335,8 @@ def match_skills(jd_tokens, resume_tokens):
     return matched, jd_tokens - matched
 
 # ---------- resume quality heuristics ----------
-POSITIVE_WORDS = {"lead", "develop", "achieved", "improved", "reduced", "optimized", "built", "designed"}
-NEGATIVE_WORDS = {"responsible", "assisted", "helped", "duties"}
+POSITIVE_WORDS = {"lead", "develop", "achieved", "improved", "reduced", "optimized", "built", "designed", "architected", "implemented"}
+NEGATIVE_WORDS = {"responsible", "assisted", "helped", "duties", "tasked"}
 
 def resume_score_and_suggestions(text, jd_tokens):
     score = 50
@@ -216,12 +377,17 @@ def scam_score(text):
 
 # ---------- role classification & experience ----------
 ROLE_KEYWORDS = {
-    "Data Scientist": ["machine learning", "deep learning", "nlp", "pytorch", "tensorflow", "sklearn"],
-    "Data Analyst": ["sql", "tableau", "powerbi", "excel", "data analysis"],
-    "Backend Engineer": ["django", "flask", "api", "microservice", "postgres", "mysql"],
-    "Frontend Engineer": ["react", "angular", "vue", "javascript", "css", "html"],
-    "DevOps": ["docker", "kubernetes", "ci/cd", "aws", "azure"],
+    "Data Scientist": ["machine learning", "deep learning", "nlp", "pytorch", "tensorflow", "sklearn", "data science"],
+    "Data Analyst": ["sql", "tableau", "powerbi", "excel", "data analysis", "dashboard"],
+    "Machine Learning Engineer": ["tensorflow", "pytorch", "keras", "ml", "model deployment", "aws"],
+    "Data Engineer": ["spark", "etl", "airflow", "data pipeline", "big data"],
+    "AI Researcher": ["research", "nlp", "transformers", "publication", "llm"],
+    "Cloud Engineer": ["aws", "gcp", "docker", "kubernetes", "terraform", "ci/cd"],
+    "Software Engineer": ["java", "spring", "mysql", "git", "html", "css"],
+    "Statistician": ["r", "spss", "statistics", "regression", "probability"],
+    "Business Analyst": ["excel", "power bi", "requirements", "kpi", "business analysis"]
 }
+
 def classify_role(tokens):
     scores = {}
     for role, kws in ROLE_KEYWORDS.items():
@@ -245,17 +411,73 @@ def predict_experience_level(text):
     return "Senior"
 
 def estimate_salary(role, experience_level):
-    base = {
-        "Data Scientist": 800000,
-        "Data Analyst": 400000,
-        "Backend Engineer": 600000,
-        "Frontend Engineer": 500000,
-        "DevOps": 650000,
-        "General/Other": 350000
+    # Salary in Lakhs per annum (LPA)
+    salary_ranges = {
+        "Data Scientist": {
+            "Fresher": "5-8 LPA",
+            "Junior": "8-12 LPA", 
+            "Mid-level": "12-18 LPA",
+            "Senior": "18-25 LPA"
+        },
+        "Data Analyst": {
+            "Fresher": "3-5 LPA",
+            "Junior": "5-7 LPA",
+            "Mid-level": "7-10 LPA",
+            "Senior": "10-15 LPA"
+        },
+        "Machine Learning Engineer": {
+            "Fresher": "6-10 LPA",
+            "Junior": "10-15 LPA",
+            "Mid-level": "15-22 LPA",
+            "Senior": "22-30 LPA"
+        },
+        "Data Engineer": {
+            "Fresher": "5-8 LPA",
+            "Junior": "8-12 LPA",
+            "Mid-level": "12-18 LPA",
+            "Senior": "18-25 LPA"
+        },
+        "AI Researcher": {
+            "Fresher": "7-12 LPA",
+            "Junior": "12-18 LPA",
+            "Mid-level": "18-25 LPA",
+            "Senior": "25-35 LPA"
+        },
+        "Cloud Engineer": {
+            "Fresher": "5-8 LPA",
+            "Junior": "8-12 LPA",
+            "Mid-level": "12-18 LPA",
+            "Senior": "18-25 LPA"
+        },
+        "Software Engineer": {
+            "Fresher": "4-6 LPA",
+            "Junior": "6-10 LPA",
+            "Mid-level": "10-15 LPA",
+            "Senior": "15-22 LPA"
+        },
+        "Statistician": {
+            "Fresher": "3-5 LPA",
+            "Junior": "5-8 LPA",
+            "Mid-level": "8-12 LPA",
+            "Senior": "12-18 LPA"
+        },
+        "Business Analyst": {
+            "Fresher": "3-5 LPA",
+            "Junior": "5-8 LPA",
+            "Mid-level": "8-12 LPA",
+            "Senior": "12-18 LPA"
+        },
+        "General/Other": {
+            "Fresher": "2-4 LPA",
+            "Junior": "4-6 LPA",
+            "Mid-level": "6-10 LPA",
+            "Senior": "10-15 LPA"
+        }
     }
-    mult = {"Fresher": 0.6, "Junior": 0.8, "Mid-level": 1.0, "Senior": 1.4}
-    salary = int(base.get(role, 350000) * mult.get(experience_level, 1.0))
-    return f"₹{salary//1000}k - ₹{int(salary*1.3)//1000}k"
+    
+    if role in salary_ranges:
+        return salary_ranges[role].get(experience_level, "2-4 LPA")
+    return "2-4 LPA"
 
 # ---------- duplicate detection ----------
 def file_hash_bytes(b):
@@ -346,376 +568,536 @@ if "role" not in st.session_state:
     st.session_state["role"] = None
 if "user" not in st.session_state:
     st.session_state["user"] = None
+if "just_registered" not in st.session_state:
+    st.session_state["just_registered"] = False
 
 # ---------- Sidebar login/signup ----------
 with st.sidebar:
-    st.markdown("## 🔐 Login / Signup")
-    role = st.radio("Login as", ["Candidate", "HR"])
-    username = st.text_input("Username")
-    password = st.text_input("Password", type="password")
-
-    if st.button("Login / Signup"):
-        users = load_users()
-
-        if role == "Candidate":
-            if not username or not password:
-                st.warning("Enter username and password to create candidate account.")
+    st.markdown("### 🔐 Login / Signup")
+    st.markdown("---")
+    
+    role = st.radio("Select Role", ["Candidate", "HR"], index=0)
+    username = st.text_input("Username", placeholder="Enter your username", key="username_input")
+    password = st.text_input("Password", type="password", placeholder="Enter your password", key="password_input", autocomplete="off")
+    
+    # Custom CSS to hide password suggestions
+    st.markdown("""
+    <style>
+        input[type="password"] {
+            -webkit-text-security: disc !important;
+        }
+        input:-webkit-autofill {
+            -webkit-box-shadow: 0 0 0px 1000px white inset !important;
+        }
+        input[type="password"]::-ms-reveal,
+        input[type="password"]::-ms-clear {
+            display: none !important;
+        }
+    </style>
+    """, unsafe_allow_html=True)
+    
+    # Check if user exists (including HR admin)
+    users = load_users()
+    HR_USERNAME = "admin"
+    HR_PASSWORD = "admin123"
+    
+    is_hr_admin = (username == HR_USERNAME)
+    is_candidate_user = (username and username in users)
+    user_exists = is_hr_admin or is_candidate_user
+    
+    if user_exists:
+        if st.button("🔑 Login", use_container_width=True):
+            if not password:
+                st.warning("⚠️ Please enter your password")
             else:
-                if username in users:
-                    st.warning(
-                        "Username already exists. "
-                        "(One resume per username rule). "
-                        "Create a new username to upload another resume."
-                    )
+                if role == "Candidate":
+                    if is_candidate_user and users[username]["password"] == password:
+                        st.session_state["login"] = True
+                        st.session_state["role"] = "Candidate"
+                        st.session_state["user"] = username
+                        st.success(f"✅ Welcome back, {username}!")
+                        st.rerun()
+                    else:
+                        st.error("❌ Invalid username or password")
+                else:
+                    if is_hr_admin and password == HR_PASSWORD:
+                        st.session_state["login"] = True
+                        st.session_state["role"] = "HR"
+                        st.session_state["user"] = username
+                        st.success("✅ HR login successful!")
+                        st.rerun()
+                    else:
+                        st.error("❌ Invalid HR credentials")
+    else:
+        if st.button("📝 Sign Up", use_container_width=True):
+            if not username or not password:
+                st.warning("⚠️ Please enter both username and password")
+            else:
+                if role != "Candidate":
+                    st.error("❌ Only candidates can sign up. HR accounts are pre-configured.")
+                elif username in users:
+                    st.error("❌ Username already exists. Please choose a different username.")
+                elif username == HR_USERNAME:
+                    st.error("❌ 'admin' is a reserved username. Please choose a different one.")
                 else:
                     if not can_upload_more():
-                        st.error(
-                            f"Upload capacity reached ({MAX_RESUMES}). "
-                            "Admin must clear storage first."
-                        )
+                        st.error(f"❌ Upload capacity reached ({MAX_RESUMES}). Contact admin.")
                     else:
                         users[username] = {
                             "password": password,
                             "uploaded_resume": None,
                             "created_at": datetime.now().isoformat()
                         }
-
                         save_users(users)
-
-                        st.success(
-                            f"Candidate account created: {username}. "
-                            "You can now upload a single resume."
-                        )
-
                         st.session_state["login"] = True
                         st.session_state["role"] = "Candidate"
                         st.session_state["user"] = username
-
-        else:
-            # HR login - fixed username and password
-            HR_USERNAME = "admin"
-            HR_PASSWORD = "admin123"
-
-            if not username or not password:
-                st.warning("Enter HR username and password.")
-
-            elif username == HR_USERNAME and password == HR_PASSWORD:
-                st.session_state["login"] = True
-                st.session_state["role"] = "HR"
-                st.session_state["user"] = username
-                st.success("HR login successful!")
-
-            else:
-                st.error("Invalid HR username or password.")
-
+                        st.success(f"✅ Account created successfully! Welcome, {username}!")
+                        st.rerun()
+    
     if st.session_state["login"]:
-        st.markdown(
-            f"**Logged in as:** "
-            f"{st.session_state.get('user')} "
-            f"({st.session_state.get('role')})"
-        )
-
-        if st.button("Logout"):
+        st.markdown("---")
+        st.markdown(f"""
+        <div style='background: #e8f4f8; padding: 12px; border-radius: 8px;'>
+            <b>👤 Logged in as:</b><br>
+            {st.session_state.get('user')} 
+            <span style='color: #0f3460; font-weight: 600;'>({st.session_state.get('role')})</span>
+        </div>
+        """, unsafe_allow_html=True)
+        
+        if st.button("🚪 Logout", use_container_width=True):
             st.session_state.clear()
-            st.success("Logged out. Please refresh page.")
-            st.stop()
+            st.success("Logged out successfully!")
+            st.rerun()
 
-
+# ---------- Main Content ----------
 if not st.session_state["login"]:
-    st.info("Please login as Candidate or HR from the sidebar.")
+    st.info("👈 Please login or sign up from the sidebar to continue.")
     st.stop()
 
 # ---------- Candidate Panel ----------
 if st.session_state["role"] == "Candidate":
-    st.header("🙋 Candidate Panel — Upload Resume")
-    st.write("Upload exactly one resume (PDF). To upload another resume later, create a new username.")
+    st.header("📄 Candidate Dashboard")
+    st.markdown("---")
+    
     current_user = st.session_state["user"]
     users = load_users()
     user_record = users.get(current_user, {})
     uploaded_fname = user_record.get("uploaded_resume")
+    
     if uploaded_fname:
-        st.success(f"You have already uploaded a resume: **{uploaded_fname}**")
-        st.info("To upload a different resume create another username.")
-        # show download link
+        st.success(f"✅ You have uploaded your resume: **{uploaded_fname}**")
         path = os.path.join(UPLOAD_DIR, uploaded_fname)
         if os.path.exists(path):
             with open(path, "rb") as f:
-                st.download_button("⬇️ Download your uploaded resume", f, file_name=uploaded_fname, mime="application/pdf")
+                st.download_button(
+                    "📥 Download your resume",
+                    f,
+                    file_name=uploaded_fname,
+                    mime="application/pdf",
+                    use_container_width=True
+                )
+        st.info("💡 Note: Each username can upload only one resume. Create a new account for additional uploads.")
         st.stop()
-
-    st.write("Make sure your resume contains your email so HR can send feedback.")
-    uploaded = st.file_uploader("Upload PDF Resume", type="pdf")
+    
+    st.write("📌 **Upload your resume to get started**")
+    st.write("Make sure your resume contains your email address so HR can send feedback.")
+    
+    uploaded = st.file_uploader(
+        "Upload Resume (PDF format only)",
+        type="pdf",
+        help="Upload a single PDF file. Max size: 5MB"
+    )
+    
     if uploaded:
         if not can_upload_more():
-            st.error(f"Upload capacity reached ({MAX_RESUMES}). Contact admin to clear older resumes.")
+            st.error(f"❌ Upload capacity reached ({MAX_RESUMES}). Contact admin.")
         else:
             data = uploaded.read()
-            # save file with username prefix to avoid duplicates
             safe_name = f"{current_user}_{uploaded.name}"
             save_path = os.path.join(UPLOAD_DIR, safe_name)
+            
             with open(save_path, "wb") as f:
                 f.write(data)
-            # update user record
+            
             users[current_user]["uploaded_resume"] = safe_name
             users[current_user]["uploaded_at"] = datetime.now().isoformat()
             save_users(users)
-            st.success(f"✅ Resume saved as {safe_name}")
+            
+            st.success("✅ Resume uploaded successfully!")
+            
             text, pages = extract_text_from_pdf(io.BytesIO(data))
-            st.write("**Extracted Contact Info:**")
-            st.write(f"- Name: {extract_name(text) or 'Not found'}")
-            st.write(f"- Email: {extract_email(text) or 'Not found'}")
-            st.write(f"- Phone: {extract_phone(text) or 'Not found'}")
-            st.write(f"- Pages: {pages}")
-            # optional: preview first 400 chars
-            st.subheader("Resume Preview (first 800 chars)")
-            st.code(text[:800] + ("" if len(text) < 800 else "\n\n..."), language="text")
+            
+            col1, col2, col3 = st.columns(3)
+            with col1:
+                st.metric("📛 Name", extract_name(text) or "Not found")
+            with col2:
+                st.metric("📧 Email", extract_email(text) or "Not found")
+            with col3:
+                st.metric("📱 Phone", extract_phone(text) or "Not found")
+            
+            st.subheader("📄 Resume Preview")
+            with st.expander("Click to view resume content"):
+                st.code(text[:1000] + ("..." if len(text) > 1000 else ""), language="text")
+            
+            st.rerun()
 
 # ---------- HR Panel ----------
 if st.session_state["role"] == "HR":
-    st.header("🧑‍💼 HR Dashboard — Smart ATS")
-    tabs = st.tabs(["📁 View All", "🏆 Rank & Analyze", "🔍 Filter & Shortlist", "📧 Send Feedback", "⚙️ Admin"])
+    st.header("👔 HR Dashboard")
+    st.markdown("---")
+    
+    tabs = st.tabs(["📁 View All", "🏆 Rank & Analyze", "🔍 Filter", "📧 Send Feedback", "⚙️ Admin"])
     users = load_users()
     stored_files = os.listdir(UPLOAD_DIR)
 
     # Tab 1: View All
     with tabs[0]:
-        st.subheader("Stored Candidate Accounts (username / password / uploaded file)")
+        st.subheader("📊 Candidate Database")
         if users:
             rows = []
             for uname, meta in users.items():
                 rows.append({
                     "Username": uname,
-                    "Password": meta.get("password", ""),
-                    "UploadedResume": meta.get("uploaded_resume", ""),
-                    "CreatedAt": meta.get("created_at", ""),
-                    "UploadedAt": meta.get("uploaded_at", "")
+                    "Resume": meta.get("uploaded_resume", "❌ Not uploaded"),
+                    "Created": meta.get("created_at", "").split("T")[0] if meta.get("created_at") else "",
+                    "Uploaded": meta.get("uploaded_at", "").split("T")[0] if meta.get("uploaded_at") else ""
                 })
             df_users = pd.DataFrame(rows)
-            st.dataframe(df_users, use_container_width=True)
+            st.dataframe(df_users, use_container_width=True, hide_index=True)
         else:
-            st.info("No candidate accounts yet.")
-
-        st.subheader("Uploaded Resumes")
-        if anim_search: st_lottie(anim_search, height=140, key="lottie_search")
+            st.info("ℹ️ No candidates registered yet.")
+        
+        st.subheader("📁 Uploaded Resumes")
+        if anim_search: 
+            st_lottie(anim_search, height=100, key="lottie_search")
+        
         if stored_files:
-            for f in stored_files:
-                st.markdown(f"<div class='card'><b>{f}</b></div>", unsafe_allow_html=True)
+            for f in stored_files[:10]:
+                st.markdown(f"<div class='card'>📄 {f}</div>", unsafe_allow_html=True)
+            if len(stored_files) > 10:
+                st.info(f"... and {len(stored_files) - 10} more files")
         else:
-            st.info("No resumes uploaded.")
+            st.info("ℹ️ No resumes uploaded yet.")
 
     # Tab 2: Rank & Analyze
     with tabs[1]:
-        st.subheader("Rank Top Candidates")
-        jd = st.text_area("Paste Job Description (JD)", height=200, placeholder="Paste JD text here...")
-        if st.button("🚀 Rank Resumes", key="rank"):
+        st.subheader("🎯 Resume Ranking & Analysis")
+        jd = st.text_area(
+            "Paste Job Description",
+            height=200,
+            placeholder="Paste the complete job description here...",
+            key="jd_input"
+        )
+        
+        if st.button("🚀 Analyze Resumes", use_container_width=True):
             if not jd:
-                st.warning("Please paste a JD first.")
+                st.warning("⚠️ Please paste a job description first.")
             elif not stored_files:
-                st.info("No resumes uploaded.")
+                st.info("ℹ️ No resumes uploaded to analyze.")
             else:
-                results = []
-                seen_hashes = {}
-                jd_tokens = extract_jd_keywords(jd)
-                for f in stored_files:
-                    path = os.path.join(UPLOAD_DIR, f)
-                    with open(path, "rb") as fh:
-                        b = fh.read()
-                    h = file_hash_bytes(b)
-                    text, pages = extract_text_from_pdf(io.BytesIO(b))
-                    tokens = tokenize_resume(text)
-                    matched, missing = match_skills(jd_tokens, tokens)
-                    similarity = int((len(matched) / max(1, len(jd_tokens))) * 100) if jd_tokens else 0
-                    score, suggestions = resume_score_and_suggestions(text, jd_tokens)
-                    scam_flag = scam_score(text)
-                    role_pred = classify_role(tokens)
-                    exp_level = predict_experience_level(text)
-                    salary = estimate_salary(role_pred, exp_level)
-                    name = extract_name(text) or f.split("_",1)[-1]
-                    email = extract_email(text)
-                    phone = extract_phone(text)
-                    duplicate_of = seen_hashes.get(h, "")
-                    if not duplicate_of:
-                        seen_hashes[h] = f
-                    results.append({
-                        "Resume": f,
-                        "Name": name,
-                        "Email": email or "",
-                        "Phone": phone or "",
-                        "Similarity": similarity,
-                        "Score": score,
-                        "Pages": pages,
-                        "Words": len(text.split()),
-                        "Matched": ", ".join(sorted(matched)),
-                        "Missing": ", ".join(sorted(missing)),
-                        "Suggestions": "; ".join(suggestions),
-                        "ScamFlag": scam_flag,
-                        "Role": role_pred,
-                        "ExpLevel": exp_level,
-                        "SalaryEstimate": salary,
-                        "DuplicateOf": duplicate_of
-                    })
-                df = pd.DataFrame(results).sort_values("Similarity", ascending=False).reset_index(drop=True)
-                st.success("✅ Analysis Completed")
-                # vertical line graph
-                st.subheader("📊 Similarity Trend (Vertical Line Graph)")
-                if not df.empty:
-                    fig, ax = plt.subplots(figsize=(10, 4 + 0.3 * len(df)))
-                    x = df['Resume']
-                    y = df['Similarity']
-                    ax.plot(x, y, marker='o', linestyle='-', linewidth=2)
-                    ax.set_xlabel("Resume")
-                    ax.set_ylabel("Similarity %")
-                    ax.set_title("JD Similarity Score per Resume")
-                    plt.xticks(rotation=45, ha='right')
-                    plt.ylim(0, 100)
-                    st.pyplot(fig)
-                # metrics
-                col1, col2, col3 = st.columns(3)
-                with col1:
-                    st.metric("Candidates", len(df))
-                with col2:
-                    avg_sim = int(df["Similarity"].mean()) if len(df) else 0
-                    st.metric("Avg Similarity", f"{avg_sim}%")
-                with col3:
-                    top_role = df['Role'].mode()[0] if len(df) else "—"
-                    st.metric("Top Role", top_role)
-                st.subheader("Detailed Results")
-                st.dataframe(df.drop(columns=['Suggestions']), use_container_width=True)
-                # expanders per resume
-                for i, row in df.iterrows():
-                    with st.expander(f"{row['Resume']} — {row['Similarity']}% — {row['Role']}"):
-                        st.write(f"*Name:* {row['Name']}  |  *Email:* {row['Email']}  |  *Phone:* {row['Phone']}")
-                        st.write(f"*Pages:* {row['Pages']}  |  *Words:* {row['Words']}")
-                        st.write(f"*Matched Skills:* {row['Matched']}")
-                        st.write(f"*Missing Skills:* {row['Missing']}")
-                        recs = []
-                        if row['Missing']:
-                            miss_list = [m.strip() for m in row['Missing'].split(",") if m.strip()]
-                            for s in miss_list:
-                                for key in ["tensorflow","pytorch","sql","nlp","react","docker","aws","sql","pandas"]:
-                                    if key in s:
-                                        recs.append((s, "Online course suggestion", "https://www.coursera.org/"))
-                                        break
-                        st.write(f"*Skill Suggestions:* {recs if recs else 'None'}")
-                        st.write(f"*Resume Suggestions:* {row['Suggestions'] if row['Suggestions'] else 'None'}")
-                        if row['ScamFlag']:
-                            st.warning("⚠️ This resume contains suspicious patterns. Manual review recommended.")
-                        if st.button(f"Generate Feedback PDF: {row['Resume']}", key=f"fb_{i}"):
-                            pdf_file = create_feedback_pdf(row['Name'], row['Similarity'], row['Matched'], row['Missing'], row['Suggestions'].split('; ') if row['Suggestions'] else [], row['ScamFlag'], row['Role'], row['ExpLevel'])
-                            with open(pdf_file, "rb") as fh:
-                                st.download_button("⬇️ Download Feedback PDF", fh, file_name=os.path.basename(pdf_file), mime="application/pdf")
-                st.session_state["latest_df"] = df
+                with st.spinner("Analyzing resumes... Please wait..."):
+                    results = []
+                    seen_hashes = {}
+                    jd_tokens = extract_jd_keywords(jd)
+                    
+                    for f in stored_files:
+                        path = os.path.join(UPLOAD_DIR, f)
+                        with open(path, "rb") as fh:
+                            b = fh.read()
+                        h = file_hash_bytes(b)
+                        text, pages = extract_text_from_pdf(io.BytesIO(b))
+                        tokens = tokenize_resume(text)
+                        matched, missing = match_skills(jd_tokens, tokens)
+                        similarity = int((len(matched) / max(1, len(jd_tokens))) * 100) if jd_tokens else 0
+                        score, suggestions = resume_score_and_suggestions(text, jd_tokens)
+                        scam_flag = scam_score(text)
+                        role_pred = classify_role(tokens)
+                        exp_level = predict_experience_level(text)
+                        salary = estimate_salary(role_pred, exp_level)
+                        name = extract_name(text) or f.split("_",1)[-1]
+                        email = extract_email(text)
+                        phone = extract_phone(text)
+                        duplicate_of = seen_hashes.get(h, "")
+                        if not duplicate_of:
+                            seen_hashes[h] = f
+                        
+                        results.append({
+                            "Resume": f,
+                            "Name": name,
+                            "Email": email or "",
+                            "Phone": phone or "",
+                            "Match %": similarity,
+                            "Score": score,
+                            "Pages": pages,
+                            "Words": len(text.split()),
+                            "Matched": ", ".join(sorted(matched)),
+                            "Missing": ", ".join(sorted(missing)),
+                            "Suggestions": "; ".join(suggestions),
+                            "ScamFlag": scam_flag,
+                            "Role": role_pred,
+                            "ExpLevel": exp_level,
+                            "Salary": salary
+                        })
+                    
+                    df = pd.DataFrame(results).sort_values("Match %", ascending=False).reset_index(drop=True)
+                    st.success("✅ Analysis Complete!")
+                    
+                    col1, col2, col3, col4 = st.columns(4)
+                    with col1:
+                        st.metric("Total Candidates", len(df))
+                    with col2:
+                        avg_match = int(df["Match %"].mean()) if len(df) else 0
+                        st.metric("Avg Match", f"{avg_match}%")
+                    with col3:
+                        top_role = df['Role'].mode()[0] if len(df) else "—"
+                        st.metric("Top Role", top_role)
+                    with col4:
+                        top_exp = df['ExpLevel'].mode()[0] if len(df) else "—"
+                        st.metric("Top Experience", top_exp)
+                    
+                    st.subheader("📊 Match Score Distribution")
+                    if not df.empty:
+                        fig, ax = plt.subplots(figsize=(10, 4))
+                        ax.bar(df['Name'], df['Match %'], color='#0f3460', alpha=0.7)
+                        ax.axhline(y=70, color='green', linestyle='--', label='70% Target')
+                        ax.set_ylabel("Match %")
+                        ax.set_xlabel("Candidates")
+                        ax.set_title("JD Match Scores")
+                        plt.xticks(rotation=45, ha='right')
+                        plt.legend()
+                        plt.tight_layout()
+                        st.pyplot(fig)
+                    
+                    st.subheader("📋 Detailed Results")
+                    st.dataframe(df[['Name', 'Role', 'Match %', 'Score', 'Email', 'ExpLevel']], 
+                                use_container_width=True, hide_index=True)
+                    
+                    st.session_state["latest_df"] = df
+                    
+                    for i, row in df.iterrows():
+                        with st.expander(f"📄 {row['Name']} — {row['Match %']}% — {row['Role']}"):
+                            col1, col2 = st.columns(2)
+                            with col1:
+                                st.write(f"**Email:** {row['Email'] or 'N/A'}")
+                                st.write(f"**Phone:** {row['Phone'] or 'N/A'}")
+                                st.write(f"**Experience:** {row['ExpLevel']}")
+                                st.write(f"**Salary Estimate:** {row['Salary']}")
+                            with col2:
+                                st.write(f"**Pages:** {row['Pages']}")
+                                st.write(f"**Words:** {row['Words']}")
+                                st.write(f"**Score:** {row['Score']}/100")
+                            
+                            st.write("**✅ Matched Skills:**")
+                            st.code(row['Matched'] or "None", language="text")
+                            
+                            st.write("**⚠️ Missing Skills:**")
+                            st.code(row['Missing'] or "None", language="text")
+                            
+                            if row['Suggestions']:
+                                st.warning(f"💡 **Suggestions:** {row['Suggestions']}")
+                            
+                            if row['ScamFlag']:
+                                st.error("⚠️ **Scam Alert:** This resume contains suspicious patterns. Manual review recommended.")
+                            
+                            if st.button(f"Generate Feedback PDF", key=f"gen_pdf_{i}"):
+                                pdf_file = create_feedback_pdf(
+                                    row['Name'], row['Match %'], 
+                                    row['Matched'], row['Missing'],
+                                    row['Suggestions'].split('; ') if row['Suggestions'] else [],
+                                    row['ScamFlag'], row['Role'], row['ExpLevel']
+                                )
+                                with open(pdf_file, "rb") as fh:
+                                    st.download_button(
+                                        "📥 Download PDF",
+                                        fh,
+                                        file_name=os.path.basename(pdf_file),
+                                        mime="application/pdf",
+                                        use_container_width=True
+                                    )
 
-    # Tab 3: Filter & Shortlist
-    with tabs[2]:
-        st.subheader("Filter by Skill Match / Shortlist")
-        jd2 = st.text_area("Paste JD for filtering", height=150)
-        if st.button("🔎 Filter Now"):
-            if not jd2:
-                st.warning("Paste a JD.")
-            elif not stored_files:
-                st.info("No resumes.")
-            else:
-                jd_tokens = extract_jd_keywords(jd2)
-                filtered = []
+   # Tab 3: Filter (Simple - Only >50% Match)
+with tabs[2]:
+    st.subheader("🔍 Filter Candidates (≥50% Match)")
+    jd_filter = st.text_area("Paste JD for filtering", height=150, key="filter_jd")
+    
+    if st.button("🔎 Apply Filter", use_container_width=True):
+        if not jd_filter:
+            st.warning("⚠️ Please paste a job description.")
+        elif not stored_files:
+            st.info("ℹ️ No resumes to filter.")
+        else:
+            with st.spinner("Filtering candidates..."):
+                jd_tokens = extract_jd_keywords(jd_filter)
+                
+                results = []
                 for f in stored_files:
                     path = os.path.join(UPLOAD_DIR, f)
                     with open(path, "rb") as fh:
                         b = fh.read()
                     text, pages = extract_text_from_pdf(io.BytesIO(b))
                     tokens = tokenize_resume(text)
+                    
                     matched, missing = match_skills(jd_tokens, tokens)
-                    if len(matched) / max(1, len(jd_tokens)) >= 0.5:
-                        filtered.append({"Resume": f, "Matched": ", ".join(sorted(matched)), "Missing": ", ".join(sorted(missing))})
-                if filtered:
-                    st.write("### Resumes matching ≥50%")
-                    for r in filtered:
-                        st.markdown(f"<div class='card'><b>{r['Resume']}</b><br>Matched: {r['Matched']}<br>Missing: {r['Missing']}</div>", unsafe_allow_html=True)
+                    
+                    if jd_tokens:
+                        match_pct = int((len(matched) / len(jd_tokens)) * 100)
+                    else:
+                        match_pct = 0
+                    
+                    name = extract_name(text) or f.split("_", 1)[-1]
+                    email = extract_email(text) or ""
+                    
+                    results.append({
+                        "Name": name,
+                        "Email": email,
+                        "Resume": f,
+                        "Match %": match_pct,
+                        "Matched": ", ".join(sorted(matched)) if matched else "None",
+                        "Missing": ", ".join(sorted(missing)) if missing else "None"
+                    })
+                
+                # Filter to >50% match
+                filtered_results = [r for r in results if r["Match %"] >= 50]
+                
+                if filtered_results:
+                    # Sort by match percentage
+                    filtered_results = sorted(filtered_results, key=lambda x: x["Match %"], ascending=False)
+                    st.success(f"✅ Found {len(filtered_results)} candidates with ≥50% match")
+                    
+                    # Show results in a clean table
+                    df_filtered = pd.DataFrame(filtered_results)
+                    st.dataframe(
+                        df_filtered[['Name', 'Email', 'Match %', 'Matched']], 
+                        use_container_width=True, 
+                        hide_index=True
+                    )
+                    
+                    # Show cards with details
+                    for row in filtered_results:
+                        st.markdown(f"""
+                        <div class='card' style='border-left-color: #28a745;'>
+                            <b>📌 {row['Name']}</b> — <span style='color: #0f3460; font-weight: bold;'>{row['Match %']}% Match</span><br>
+                            <span style='color: #28a745;'>✅ Matched: {row['Matched'][:150]}</span><br>
+                            <span style='color: #dc3545;'>⚠️ Missing: {row['Missing'][:150]}</span>
+                        </div>
+                        """, unsafe_allow_html=True)
+                    
+                    # Export option
+                    csv = df_filtered.to_csv(index=False)
+                    st.download_button(
+                        "📥 Download Results (CSV)",
+                        csv,
+                        file_name="filtered_candidates.csv",
+                        mime="text/csv",
+                        use_container_width=True
+                    )
                 else:
-                    st.info("No matches ≥50%")
+                    st.info("ℹ️ No candidates with ≥50% match found.")
 
     # Tab 4: Send Feedback
     with tabs[3]:
-        st.subheader("Send Feedback Emails to Candidates")
-        if anim_send: 
-            st_lottie(anim_send, height=140, key="lottie_send")
-        st.write("⚠️ Use Gmail App Password for SMTP (recommended).")
+        st.subheader("📧 Send Feedback Emails")
+        if anim_send:
+            st_lottie(anim_send, height=100, key="lottie_send")
         
-        smtp_user = st.text_input("SMTP Email (from)", value="", placeholder="yourorg@gmail.com", key="smtp_user")
-        smtp_password = st.text_input("SMTP App Password", type="password", key="smtp_pass")
+        st.info("💡 Use Gmail App Password for SMTP (recommended)")
+        
+        smtp_user = st.text_input("SMTP Email", placeholder="yourorg@gmail.com", key="smtp_user")
+        smtp_password = st.text_input("App Password", type="password", placeholder="Enter app password", key="smtp_pass")
         
         if "latest_df" not in st.session_state:
-            st.info("Run 'Rank Resumes' first to prepare feedback list.")
+            st.warning("⚠️ Please run 'Rank & Analyze' first to prepare the feedback list.")
         else:
             df = st.session_state["latest_df"]
-            st.write(f"Ready to send feedback for {len(df)} candidates.")
+            st.write(f"📋 Ready to send feedback for **{len(df)}** candidates")
             
-            if st.button("📧 Send Feedback to All (generate PDFs + email)"):
+            if st.button("📤 Send Feedback to All", use_container_width=True):
                 if not smtp_user or not smtp_password:
-                    st.warning("Provide SMTP credentials.")
+                    st.error("❌ Please provide SMTP credentials")
                 else:
-                    sent = 0
-                    for i, row in df.iterrows():
-                        pdf_file = create_feedback_pdf(
-                            row['Name'], row['Similarity'], row['Matched'], row['Missing'],
-                            row['Suggestions'].split('; ') if row['Suggestions'] else [],
-                            row['ScamFlag'], row['Role'], row['ExpLevel']
-                        )
-                        email = row['Email'] if row['Email'] else None
-                        if not email:
-                            path = os.path.join(UPLOAD_DIR, row['Resume'])
-                            with open(path, "rb") as fh:
-                                txt, _ = extract_text_from_pdf(fh)
-                            email = extract_email(txt)
-                        if email:
-                            try:
-                                send_feedback_email(smtp_user, smtp_password, email, pdf_file, row['Name'])
-                                sent += 1
-                            except Exception as e:
-                                st.error(f"Failed to send to {row['Resume']}: {e}")
-                        else:
-                            st.warning(f"No email found for {row['Resume']}; skipped.")
-                    st.success(f"Email send complete. {sent} emails sent.")
+                    with st.spinner("Sending emails..."):
+                        sent = 0
+                        failed = 0
+                        for i, row in df.iterrows():
+                            pdf_file = create_feedback_pdf(
+                                row['Name'], row['Match %'], 
+                                row['Matched'], row['Missing'],
+                                row['Suggestions'].split('; ') if row['Suggestions'] else [],
+                                row['ScamFlag'], row['Role'], row['ExpLevel']
+                            )
+                            email = row['Email'] if row['Email'] else None
+                            if not email:
+                                path = os.path.join(UPLOAD_DIR, row['Resume'])
+                                with open(path, "rb") as fh:
+                                    txt, _ = extract_text_from_pdf(fh)
+                                email = extract_email(txt)
+                            
+                            if email:
+                                try:
+                                    send_feedback_email(smtp_user, smtp_password, email, pdf_file, row['Name'])
+                                    sent += 1
+                                except Exception as e:
+                                    failed += 1
+                                    st.error(f"Failed to send to {row['Name']}: {e}")
+                            else:
+                                failed += 1
+                                st.warning(f"No email found for {row['Name']}")
+                        
+                        st.success(f"✅ Email process complete! Sent: {sent}, Failed: {failed}")
 
-    # Tab 5: Admin / Utilities
+    # Tab 5: Admin
     with tabs[4]:
-        st.subheader("Admin / Utilities")
-        st.write(f"Current uploads: {len(os.listdir(UPLOAD_DIR))} / {MAX_RESUMES}")
-
-        if st.button("🧹 Clear uploaded resumes"):
-            for f in os.listdir(UPLOAD_DIR):
-                os.remove(os.path.join(UPLOAD_DIR, f))
-            users = load_users()
-            for u in users:
-                users[u]["uploaded_resume"] = None
-                users[u].pop("uploaded_at", None)
-            save_users(users)
-            st.session_state.clear()
-            st.success("Uploaded resumes cleared. Please refresh page.")
-            st.stop()
-
-        if st.button("🗑 Clear generated PDFs"):
-            for f in os.listdir(PDFS_DIR):
-                os.remove(os.path.join(PDFS_DIR, f))
-            st.success("Generated PDFs cleared.")
-
-        if st.button("❌ Clear all users & resumes"):
-            for f in os.listdir(UPLOAD_DIR):
-                os.remove(os.path.join(UPLOAD_DIR, f))
-            for f in os.listdir(PDFS_DIR):
-                os.remove(os.path.join(PDFS_DIR, f))
-            if os.path.exists(USER_DB_FILE):
-                os.remove(USER_DB_FILE)
-            st.session_state.clear()
-            st.success("All users, resumes, and PDFs cleared. Refresh page.")
-            st.stop()
-
-        st.markdown("**Optional:** Provide OPENAI_API_KEY in environment to enable AI-enhanced resume rewriting.")
-        st.write("Saved folders (on server):")
-        st.write(f"- Uploads: {os.path.abspath(UPLOAD_DIR)}")
-        st.write(f"- PDFs: {os.path.abspath(PDFS_DIR)}")
-        st.write(f"- User DB: {os.path.abspath(USER_DB_FILE)}")
+        st.subheader("⚙️ System Administration")
+        
+        col1, col2, col3 = st.columns(3)
+        with col1:
+            st.metric("Uploaded Resumes", len(os.listdir(UPLOAD_DIR)), delta=f"Max: {MAX_RESUMES}")
+        with col2:
+            st.metric("Generated PDFs", len(os.listdir(PDFS_DIR)))
+        with col3:
+            st.metric("Registered Users", len(load_users()))
+        
+        st.markdown("---")
+        st.warning("⚠️ Admin actions are irreversible. Please use with caution.")
+        
+        col1, col2, col3 = st.columns(3)
+        
+        with col1:
+            if st.button("🗑️ Clear Uploaded Resumes", use_container_width=True):
+                for f in os.listdir(UPLOAD_DIR):
+                    os.remove(os.path.join(UPLOAD_DIR, f))
+                users = load_users()
+                for u in users:
+                    users[u]["uploaded_resume"] = None
+                    users[u].pop("uploaded_at", None)
+                save_users(users)
+                st.success("✅ Resumes cleared. Refreshing...")
+                st.rerun()
+        
+        with col2:
+            if st.button("🗑️ Clear Generated PDFs", use_container_width=True):
+                for f in os.listdir(PDFS_DIR):
+                    os.remove(os.path.join(PDFS_DIR, f))
+                st.success("✅ PDFs cleared.")
+        
+        with col3:
+            if st.button("❌ Reset All Data", use_container_width=True):
+                for f in os.listdir(UPLOAD_DIR):
+                    os.remove(os.path.join(UPLOAD_DIR, f))
+                for f in os.listdir(PDFS_DIR):
+                    os.remove(os.path.join(PDFS_DIR, f))
+                if os.path.exists(USER_DB_FILE):
+                    os.remove(USER_DB_FILE)
+                st.session_state.clear()
+                st.success("✅ All data reset. Refreshing...")
+                st.rerun()
 
 # Footer
-st.markdown("<hr>", unsafe_allow_html=True)
-st.markdown("<div style='text-align:center; font-size:12px; color:#666;'>Smart ATS — Enhanced • Demo / Academic use • Do not expose passwords in production</div>", unsafe_allow_html=True)
+st.markdown("---")
+st.markdown("""
+<div class='footer'>
+    <b>HireVision AI</b> — Smart ATS System • <span style='color: #0f3460;'>Professional Edition</span><br>
+    <small>© 2024 All Rights Reserved • For demonstration purposes only</small>
+</div>
+""", unsafe_allow_html=True)
