@@ -5,3 +5,6 @@ nltk
 pandas
 matplotlib
 reportlab
+scikit-learn
+PyMuPDF
+openpyxl
