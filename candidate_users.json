@@ -1,0 +1,55 @@
+{
+  "user1": {
+    "password": "user@123",
+    "uploaded_resume": "user1_Akshatha_H_R.pdf",
+    "created_at": "2025-12-03T00:30:46.296757",
+    "uploaded_at": "2025-12-03T00:31:17.395225"
+  },
+  "user2": {
+    "password": "user2@123",
+    "uploaded_resume": "user2_Akshatha_H_R.pdf",
+    "created_at": "2025-12-03T00:32:01.954949",
+    "uploaded_at": "2025-12-03T00:32:01.983912"
+  },
+  "user3": {
+    "password": "user3",
+    "uploaded_resume": "user3_Resume_1_DataScientist.pdf",
+    "created_at": "2025-12-03T00:33:39.072443",
+    "uploaded_at": "2025-12-03T00:33:52.331705"
+  },
+  "user4": {
+    "password": "user4",
+    "uploaded_resume": "user4_Resume_3_DataAnalyst.pdf",
+    "created_at": "2025-12-03T00:34:33.587973",
+    "uploaded_at": "2025-12-03T00:34:42.090405"
+  },
+  "user5": {
+    "password": "user5",
+    "uploaded_resume": "user5_Resume_5_AIResearcher.pdf",
+    "created_at": "2025-12-03T00:35:25.507497",
+    "uploaded_at": "2025-12-03T00:35:35.436629"
+  },
+  "user6": {
+    "password": "user6",
+    "uploaded_resume": "user6_Resume_8_DataEngineer.pdf",
+    "created_at": "2025-12-03T00:35:53.983622",
+    "uploaded_at": "2025-12-03T00:36:10.354184"
+  },
+  "user7": {
+    "password": "user7",
+    "uploaded_resume": null,
+    "created_at": "2025-12-03T09:36:04.633373"
+  },
+  "user8": {
+    "password": "user8",
+    "uploaded_resume": "user8_Resume_4_SoftwareEngineer.pdf",
+    "created_at": "2025-12-05T23:15:30.021523",
+    "uploaded_at": "2025-12-05T23:16:09.559323"
+  },
+  "admin1": {
+    "password": "admin1@123",
+    "uploaded_resume": "admin1_Sample_Resume (1).pdf",
+    "created_at": "2026-07-29T21:04:27.991204",
+    "uploaded_at": "2026-07-29T21:04:42.600279"
+  }
+}
