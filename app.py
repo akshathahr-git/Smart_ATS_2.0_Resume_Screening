@@ -518,13 +518,12 @@ def save_users(d):
 def can_upload_more():
     return len(os.listdir(UPLOAD_DIR)) < MAX_RESUMES
 
-# ---------- SIDEBAR LOGIN - AFTER ALL FUNCTIONS ----------
+# ---------- SIDEBAR LOGIN ----------
 with st.sidebar:
     st.markdown("### 🔐 Login / Signup")
     st.markdown("---")
     
-    # If already logged in
-    if st.session_state["login"]:
+    if st.session_state.get("login", False):
         st.markdown(f"""
         <div style='background: #e8f4f8; padding: 15px; border-radius: 10px; border-left: 4px solid #D4AF37;'>
             <b>👤 Logged in as:</b><br>
@@ -541,7 +540,6 @@ with st.sidebar:
         st.markdown("### 👥 Select Your Role")
         st.markdown("---")
         
-        # Custom CSS for radio buttons
         st.markdown("""
         <style>
         div[role="radiogroup"] {
@@ -582,6 +580,9 @@ with st.sidebar:
             horizontal=False
         )
         
+        # Save selected role to session state
+        st.session_state.selected_role = selected_role
+        
         if selected_role == "👤 Candidate":
             selected_role = "Candidate"
         else:
@@ -589,46 +590,30 @@ with st.sidebar:
         
         st.markdown("---")
         
-        username = st.text_input("Username", placeholder="Enter your username", key="login_username")
-        password = st.text_input("Password", type="password", placeholder="Enter your password", key="login_password")
-        
-        users = load_users()
-        HR_USERNAME = "admin"
-        HR_PASSWORD = "admin123"
-        
         if selected_role == "Candidate":
+            st.info("📄 Upload your resume on the main page")
+        else:
+            username = st.text_input("Username", placeholder="Enter your username", key="login_username")
+            password = st.text_input("Password", type="password", placeholder="Enter your password", key="login_password")
+            
+            HR_USERNAME = "admin"
+            HR_PASSWORD = "admin123"
+            
             if st.button("🔑 Login", use_container_width=True, type="primary"):
                 if not username or not password:
                     st.warning("Please enter username and password")
-                elif username in users and users[username]["password"] == password:
-                    st.session_state["login"] = True
-                    st.session_state["role"] = "Candidate"
-                    st.session_state["user"] = username
-                    st.success(f"Welcome back, {username}!")
-                    st.rerun()
-                else:
-                    st.error("Invalid username or password")
-        else:
-            if st.button("📝 Sign Up", use_container_width=True, type="primary"):
-                if not username or not password:
-                    st.warning("Please enter username and password")
                 elif username == HR_USERNAME and password == HR_PASSWORD:
-                    users[username] = {
-                        "password": password,
-                        "role": "HR",
-                        "created_at": datetime.now().isoformat()
-                    }
-                    save_users(users)
                     st.session_state["login"] = True
                     st.session_state["role"] = "HR"
                     st.session_state["user"] = username
-                    st.success(f"HR account created! Welcome, {username}!")
+                    st.success("HR login successful!")
                     st.rerun()
                 else:
                     st.error("Invalid HR credentials")
 
-# ---------- Main Content Check ----------
-if not st.session_state["login"]:
+# ---------- MAIN CONTENT ----------
+if not st.session_state.get("login", False):
+    # Show header always
     st.markdown("""
     <div style='
         background: linear-gradient(135deg, #1B2A4A 0%, #2C3E6B 50%, #1B2A4A 100%);
@@ -647,18 +632,68 @@ if not st.session_state["login"]:
     </div>
     """, unsafe_allow_html=True)
     
-    st.markdown("""
-    <div style='
-        text-align: center; 
-        padding: 60px 20px; 
-        background: #f8f9fc; 
-        border-radius: 15px; 
-        border: 2px dashed #2C3E6B; 
-        margin-top: 20px;
-    '>
-        <p style='color: #6c757d; font-size: 18px;'>👈 Please login or sign up from the sidebar to continue.</p>
-    </div>
-    """, unsafe_allow_html=True)
+    # Check if Candidate role is selected in sidebar
+    if st.session_state.get("selected_role") == "👤 Candidate":
+        st.subheader("📄 Upload Your Resume")
+        st.write("Upload your resume (PDF or TXT format) to get started. HR will review and contact you via email.")
+        
+        uploaded_file = st.file_uploader(
+            "Choose your resume file",
+            type=["pdf", "txt"],
+            help="Upload a PDF or TXT file. Max size: 5MB"
+        )
+        
+        if uploaded_file:
+            if not can_upload_more():
+                st.error(f"❌ Upload capacity reached ({MAX_RESUMES}). Contact admin.")
+            else:
+                data = uploaded_file.read()
+                file_extension = uploaded_file.name.split('.')[-1].lower()
+                safe_name = f"candidate_{datetime.now().strftime('%Y%m%d%H%M%S')}_{uploaded_file.name}"
+                save_path = os.path.join(UPLOAD_DIR, safe_name)
+                
+                with open(save_path, "wb") as f:
+                    f.write(data)
+                
+                if file_extension == "pdf":
+                    text, pages = extract_text_from_pdf(io.BytesIO(data))
+                else:
+                    try:
+                        text = data.decode("utf-8", errors="ignore")
+                        pages = 1
+                    except Exception:
+                        text = ""
+                        pages = 0
+                
+                name = extract_name(text) or "Unknown"
+                email = extract_email(text) or "Not found"
+                phone = extract_phone(text) or "Not found"
+                
+                st.success("✅ Resume uploaded successfully!")
+                
+                col1, col2, col3 = st.columns(3)
+                with col1:
+                    st.metric("📛 Name", name)
+                with col2:
+                    st.metric("📧 Email", email)
+                with col3:
+                    st.metric("📱 Phone", phone)
+                
+                st.balloons()
+    else:
+        # Show message when no role selected or HR is selected
+        st.markdown("""
+        <div style='
+            text-align: center; 
+            padding: 60px 20px; 
+            background: #f8f9fc; 
+            border-radius: 15px; 
+            border: 2px dashed #2C3E6B; 
+            margin-top: 20px;
+        '>
+            <p style='color: #6c757d; font-size: 18px;'>👈 Please select a role (<b>Candidate</b> or <b>HR</b>) from the sidebar.</p>
+        </div>
+        """, unsafe_allow_html=True)
     
     st.stop()
 
