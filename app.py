@@ -107,20 +107,40 @@ def classify_role_from_skills(skills):
     if not skills:
         return "General/Other"
     
+    # Non-technical skills to ignore
+    NON_TECHNICAL = {
+        "communication", "team management", "ms office", "excel", "powerpoint", 
+        "basic computer knowledge", "team player", "quick learner", "adaptable",
+        "good communication", "leadership", "problem solving", "time management",
+        "organizational skills", "interpersonal skills", "microsoft office",
+        "word", "outlook", "presentation skills", "verbal communication"
+    }
+    
+    # Filter out non-technical skills
+    technical_skills = []
+    for skill in skills:
+        skill_lower = skill.lower()
+        if skill_lower not in NON_TECHNICAL:
+            technical_skills.append(skill_lower)
+    
+    # If no technical skills, return General/Other
+    if not technical_skills:
+        return "General/Other"
+    
     ROLE_KEYWORDS = {
         "Python Developer": ["python", "django", "flask", "fastapi"],
         "Java Developer": ["java", "spring", "hibernate", "maven"],
         "Frontend Developer": ["react", "angular", "vue", "html", "css", "javascript"],
         "Full Stack Developer": ["react", "node", "python", "java", "javascript", "html", "css"],
-        "Data Scientist": ["python", "r", "tensorflow", "pytorch", "sklearn", "pandas", "numpy"],
-        "Data Analyst": ["sql", "tableau", "power bi", "excel", "python", "r"],
-        "Machine Learning Engineer": ["tensorflow", "pytorch", "keras", "scikit-learn", "ml"],
+        "Data Scientist": ["python", "r", "tensorflow", "pytorch", "sklearn", "pandas", "numpy", "machine learning", "deep learning", "nlp", "statistics"],
+        "Data Analyst": ["sql", "tableau", "power bi", "excel", "python", "r", "data analysis"],
+        "Machine Learning Engineer": ["tensorflow", "pytorch", "keras", "scikit-learn", "ml", "deep learning"],
         "Data Engineer": ["spark", "hadoop", "etl", "airflow", "kafka", "python", "sql"],
-        "DevOps Engineer": ["docker", "kubernetes", "jenkins", "aws", "azure", "terraform"],
+        "DevOps Engineer": ["docker", "kubernetes", "jenkins", "aws", "azure", "terraform", "ci/cd"],
         "Cloud Engineer": ["aws", "azure", "gcp", "docker", "kubernetes", "terraform"],
-        "AI Researcher": ["python", "tensorflow", "pytorch", "nlp", "deep learning"],
+        "AI Researcher": ["python", "tensorflow", "pytorch", "nlp", "deep learning", "research"],
         "Statistician": ["r", "python", "statistics", "regression", "spss", "sas"],
-        "Business Analyst": ["excel", "sql", "power bi", "tableau", "business analysis"],
+        "Business Analyst": ["excel", "sql", "power bi", "tableau", "business analysis", "requirements"],
         "Software Engineer": ["python", "java", "c++", "javascript", "git", "sql"],
         "QA Engineer": ["selenium", "junit", "pytest", "testng", "cypress"],
         "Backend Developer": ["python", "java", "node", "django", "flask", "spring", "sql"],
@@ -130,15 +150,20 @@ def classify_role_from_skills(skills):
     for role, keywords in ROLE_KEYWORDS.items():
         score = 0
         for kw in keywords:
-            for skill in skills:
-                if kw.lower() in skill.lower() or skill.lower() in kw.lower():
+            for skill in technical_skills:
+                if kw.lower() in skill or skill in kw.lower():
                     score += 1
                     break
         scores[role] = score
     
     # Get role with highest score
     best_role = max(scores, key=lambda k: scores[k])
-    return best_role if scores[best_role] > 0 else "General/Other"
+    
+    # If the best score is 0, return General/Other
+    if scores[best_role] == 0:
+        return "General/Other"
+    
+    return best_role
 
 # Download NLTK resources
 resources = [
@@ -849,68 +874,104 @@ if st.session_state["role"] == "HR":
     users = load_users()
     stored_files = os.listdir(UPLOAD_DIR)
 
-    # Tab 1: View All - MODIFIED
-    with tabs[0]:
-        st.subheader("📊 Candidate Database")
-        if users:
-            rows = []
-            for uname, meta in users.items():
-                rows.append({
-                    "Username": uname,
-                    "Resume": meta.get("uploaded_resume", "❌ Not uploaded"),
-                    "Uploaded": meta.get("uploaded_at", "").split("T")[0] if meta.get("uploaded_at") else ""
-                })
-            df_users = pd.DataFrame(rows)
-            st.dataframe(df_users, use_container_width=True, hide_index=True)
+    # Tab 1: View All - UPDATED (Username removed)
+with tabs[0]:
+    st.subheader("📊 Candidate Database")
+    
+    # Get all uploaded resumes with extracted info
+    resume_data = []
+    for f in stored_files:
+        file_path = os.path.join(UPLOAD_DIR, f)
+        file_extension = f.split('.')[-1].lower()
+        
+        with open(file_path, "rb") as fh:
+            b = fh.read()
+        
+        if file_extension == "pdf":
+            text, pages = extract_text_from_pdf(io.BytesIO(b))
+        else:
+            try:
+                text = b.decode("utf-8", errors="ignore")
+                pages = 1
+            except Exception:
+                text = ""
+                pages = 0
+        
+        name = extract_name(text) or f.split("_")[-1] if "_" in f else f
+        email = extract_email(text) or "Not found"
+        phone = extract_phone(text) or "Not found"
+        
+        resume_data.append({
+            "Name": name,
+            "Email": email,
+            "Phone": phone,
+            "Resume": f,
+            "Uploaded": datetime.fromtimestamp(os.path.getctime(file_path)).strftime("%Y-%m-%d")
+        })
+    
+    if resume_data:
+        # ✅ Show only Name, Resume, and Uploaded columns (Username removed)
+        df_resumes = pd.DataFrame(resume_data)
+        display_df = df_resumes[['Name', 'Resume', 'Uploaded']]
+        st.dataframe(display_df, use_container_width=True, hide_index=True)
+        
+        # Delete functionality
+        st.subheader("🗑️ Delete Resume")
+        col1, col2 = st.columns([3, 1])
+        with col1:
+            resume_to_delete = st.selectbox(
+                "Select resume to delete",
+                options=[r["Resume"] for r in resume_data],
+                help="Select a resume file to permanently delete"
+            )
+        with col2:
+            if st.button("🗑️ Delete Selected", use_container_width=True, type="secondary"):
+                if resume_to_delete:
+                    file_path = os.path.join(UPLOAD_DIR, resume_to_delete)
+                    if os.path.exists(file_path):
+                        os.remove(file_path)
+                        st.success(f"✅ Deleted: {resume_to_delete}")
+                        st.rerun()
+    else:
+        st.info("ℹ️ No resumes uploaded yet.")
+    
+    st.subheader("📁 Uploaded Resumes")
+if anim_search: 
+    st_lottie(anim_search, height=100, key="lottie_search")
+
+if stored_files:
+    for f in stored_files[:10]:
+        file_path = os.path.join(UPLOAD_DIR, f)
+        
+        # Expandable card with view option
+        with st.expander(f"📄 {f}"):
+            # Read and display file content
+            try:
+                with open(file_path, "r", encoding="utf-8") as file:
+                    content = file.read()
+                    st.text_area("Resume Content", content, height=200, key=f"view_{f}")
+            except:
+                # For PDF files - show download option
+                st.warning("📄 PDF file - Click download to view")
             
-            # Delete functionality
-            st.subheader("🗑️ Delete Resume")
-            col1, col2 = st.columns([3, 1])
-            with col1:
-                resume_to_delete = st.selectbox(
-                    "Select resume to delete",
-                    options=[r["Resume"] for r in rows if r["Resume"] != "❌ Not uploaded"],
-                    help="Select a resume file to permanently delete"
+            # Download button
+            with open(file_path, "rb") as file:
+                st.download_button(
+                    label="📥 Download Resume",
+                    data=file,
+                    file_name=f,
+                    mime="text/plain" if f.endswith('.txt') else "application/pdf",
+                    key=f"download_{f}",
+                    use_container_width=True
                 )
-            with col2:
-                if st.button("🗑️ Delete Selected", use_container_width=True, type="secondary"):
-                    if resume_to_delete:
-                        # Find which user has this resume
-                        user_to_update = None
-                        for uname, meta in users.items():
-                            if meta.get("uploaded_resume") == resume_to_delete:
-                                user_to_update = uname
-                                break
-                        
-                        if user_to_update:
-                            # Delete the file
-                            file_path = os.path.join(UPLOAD_DIR, resume_to_delete)
-                            if os.path.exists(file_path):
-                                os.remove(file_path)
-                            
-                            # Update users.json
-                            users[user_to_update]["uploaded_resume"] = None
-                            users[user_to_update].pop("uploaded_at", None)
-                            save_users(users)
-                            
-                            st.success(f"✅ Deleted: {resume_to_delete}")
-                            st.rerun()
-        else:
-            st.info("ℹ️ No candidates registered yet.")
-        
-        st.subheader("📁 Uploaded Resumes")
-        if anim_search: 
-            st_lottie(anim_search, height=100, key="lottie_search")
-        
-        if stored_files:
-            for f in stored_files[:10]:
-                st.markdown(f"<div class='card'>📄 {f}</div>", unsafe_allow_html=True)
-            if len(stored_files) > 10:
-                st.info(f"... and {len(stored_files) - 10} more files")
-        else:
-            st.info("ℹ️ No resumes uploaded yet.")
+    
+    if len(stored_files) > 10:
+        st.info(f"... and {len(stored_files) - 10} more files")
+else:
+    st.info("ℹ️ No resumes uploaded yet.")
 
     # Tab 2: Rank & Analyze - COMPLETELY UPDATED
+# Tab 2: Rank & Analyze - UPDATED with Non-Technical Filter
 with tabs[1]:
     st.subheader("🎯 Resume Ranking & Analysis")
     
@@ -987,6 +1048,17 @@ with tabs[1]:
                 # Extract technical skills from JD
                 jd_skills = extract_technical_skills(jd)
                 
+                # ✅ Non-technical skills to filter out
+                NON_TECHNICAL = {
+                    "excel", "powerpoint", "ms office", "microsoft office", "word", "outlook",
+                    "communication", "team management", "team player", "quick learner",
+                    "adaptable", "good communication", "leadership", "problem solving",
+                    "time management", "organizational skills", "interpersonal skills",
+                    "presentation skills", "verbal communication", "basic computer knowledge",
+                    "computer knowledge", "soft skills", "management skills", "office",
+                    "power bi", "tableau", "sql", "python", "r", "statistics", "data analysis"
+                }
+                
                 for f in stored_files:
                     path = os.path.join(UPLOAD_DIR, f)
                     file_extension = f.split('.')[-1].lower()
@@ -1008,25 +1080,25 @@ with tabs[1]:
                     # Extract technical skills from resume
                     resume_skills = extract_technical_skills(text)
                     
-                    # Calculate technical skills match
-                    matched_skills = jd_skills.intersection(resume_skills)
-                    missing_skills = jd_skills - resume_skills
+                    # ✅ Filter out non-technical skills
+                    filtered_resume_skills = {skill for skill in resume_skills if skill.lower() not in NON_TECHNICAL}
+                    
+                    # Calculate technical skills match using filtered skills
+                    matched_skills = jd_skills.intersection(filtered_resume_skills)
+                    missing_skills = jd_skills - filtered_resume_skills
                     
                     # Technical Skills Match % (40%)
                     tech_match_pct = int((len(matched_skills) / max(1, len(jd_skills))) * 100)
                     
                     # Experience Level (30%)
                     exp_level = predict_experience_level(text)
-                    # Check if experience matches JD expectation (simplified)
                     exp_match = 100  # Default
                     
-                    # Role Match (20%) - UPDATED with new function
-                    role_pred = classify_role_from_skills(resume_skills)
-                    # Check if role matches JD (simplified)
+                    # Role Match (20%) - Use filtered skills
+                    role_pred = classify_role_from_skills(filtered_resume_skills)
                     role_match = 100  # Default
                     
                     # Education (10%)
-                    # Extract education from text (simplified)
                     edu_score = 50  # Default
                     edu_keywords = ["phd", "doctorate", "master", "m.sc", "m.s", "bachelor", "b.sc", "b.s", "b.tech", "m.tech", "mca", "bca"]
                     for keyword in edu_keywords:
@@ -1091,7 +1163,6 @@ with tabs[1]:
                     avg_match = int(df["Match %"].mean()) if len(df) else 0
                     st.metric("Avg Match", f"{avg_match}%")
                 with col3:
-                    # Get top role based on count
                     top_role = df['Role'].mode()[0] if len(df) and not df['Role'].empty else "—"
                     st.metric("Top Role", top_role)
                 with col4:
@@ -1177,7 +1248,7 @@ with tabs[1]:
                         
                         if row['ScamFlag']:
                             st.error("⚠️ **Scam Alert:** This resume contains suspicious patterns. Manual review recommended.")
-
+                            
 # Tab 3: Filter - UPDATED with Role Filter and Removed Skills Columns
 with tabs[2]:
     st.subheader("🔍 Filter Candidates by Role")
