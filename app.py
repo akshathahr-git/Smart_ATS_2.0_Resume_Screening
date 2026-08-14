@@ -50,6 +50,9 @@ TECHNICAL_SKILLS = {
     "JQuery", "Bootstrap", "Tailwind", "Sass", "Webpack",
     "Next.js", "Nuxt.js", "Svelte", "Gatsby", "Remix",
     "Keras", "OpenCV", "NLTK", "spaCy", "Transformers",
+    # ✅ ADDED
+    "scikit-learn", "sklearn", "scikit learn",
+    "tensorflow", "pytorch",
     
     # Databases
     "SQL", "MySQL", "PostgreSQL", "MongoDB", "Redis", "Oracle", 
@@ -60,11 +63,16 @@ TECHNICAL_SKILLS = {
     "AWS", "Azure", "GCP", "Docker", "Kubernetes", "Jenkins", 
     "GitLab CI", "GitHub Actions", "Terraform", "Ansible", "Chef",
     "Puppet", "SaltStack", "OpenShift", "CloudFormation", "CircleCI",
+    # ✅ ADDED
+    "aws", "azure", "gcp",
     
     # Data Science & ML
     "NLP", "Computer Vision", "Deep Learning", "Machine Learning",
     "Data Mining", "Data Visualization", "Statistics", "Big Data",
     "Hadoop", "Spark", "Kafka", "Airflow", "Tableau", "Power BI",
+    # ✅ ADDED
+    "nlp", "deep learning", "machine learning", "statistics", 
+    "data visualization", "tableau", "power bi",
     
     # Tools
     "Git", "Linux", "Jira", "Confluence", "Agile", "Scrum",
@@ -88,6 +96,8 @@ TECHNICAL_SKILLS = {
     # Architecture & Design
     "Microservices", "REST API", "GraphQL", "gRPC", "SOAP",
     "Event Driven", "Serverless", "MQTT", "WebSocket",
+    # ✅ ADDED
+    "rest api", "microservices",
 }
 
 def extract_technical_skills(text):
@@ -101,6 +111,67 @@ def extract_technical_skills(text):
             found_skills.add(skill)
     return found_skills
 
+# ---------- role classification from skills ----------
+def classify_role_from_skills(skills):
+    """Classify role based on technical skills found in resume"""
+    if not skills:
+        return "General/Other"
+    
+    # Non-technical skills to ignore
+    NON_TECHNICAL = {
+        "communication", "team management", "ms office", "excel", "powerpoint", 
+        "basic computer knowledge", "team player", "quick learner", "adaptable",
+        "good communication", "leadership", "problem solving", "time management",
+        "organizational skills", "interpersonal skills", "microsoft office",
+        "word", "outlook", "presentation skills", "verbal communication"
+    }
+    
+    # Filter out non-technical skills
+    technical_skills = []
+    for skill in skills:
+        skill_lower = skill.lower()
+        if skill_lower not in NON_TECHNICAL:
+            technical_skills.append(skill_lower)
+    
+    # If no technical skills, return General/Other
+    if not technical_skills:
+        return "General/Other"
+    
+    ROLE_KEYWORDS = {
+        "Python Developer": ["python", "django", "flask", "fastapi"],
+        "Java Developer": ["java", "spring", "hibernate", "maven"],
+        "Frontend Developer": ["react", "angular", "vue", "html", "css", "javascript"],
+        "Full Stack Developer": ["react", "node", "python", "java", "javascript", "html", "css"],
+        "Data Scientist": ["python", "r", "tensorflow", "pytorch", "sklearn", "pandas", "numpy", "machine learning", "deep learning", "nlp", "statistics"],
+        "Data Analyst": ["sql", "tableau", "power bi", "python", "r", "data analysis"],
+        "Machine Learning Engineer": ["tensorflow", "pytorch", "keras", "scikit-learn", "ml", "deep learning"],
+        "Data Engineer": ["spark", "hadoop", "etl", "airflow", "kafka", "python", "sql"],
+        "DevOps Engineer": ["docker", "kubernetes", "jenkins", "aws", "azure", "terraform", "ci/cd"],
+        "Cloud Engineer": ["aws", "azure", "gcp", "docker", "kubernetes", "terraform"],
+        "AI Researcher": ["python", "tensorflow", "pytorch", "nlp", "deep learning", "research"],
+        "Statistician": ["r", "python", "statistics", "regression", "spss", "sas"],
+        "Business Analyst": ["sql", "power bi", "tableau", "business analysis", "requirements"],
+        "Software Engineer": ["python", "java", "c++", "javascript", "git", "sql"],
+        "QA Engineer": ["selenium", "junit", "pytest", "testng", "cypress"],
+        "Backend Developer": ["python", "java", "node", "django", "flask", "spring", "sql"],
+    }
+    
+    scores = {}
+    for role, keywords in ROLE_KEYWORDS.items():
+        score = 0
+        for kw in keywords:
+            for skill in technical_skills:
+                if kw.lower() in skill or skill in kw.lower():
+                    score += 1
+                    break
+        scores[role] = score
+    
+    best_role = max(scores, key=lambda k: scores[k])
+    
+    if scores[best_role] == 0:
+        return "General/Other"
+    
+    return best_role
 
 # Download NLTK resources
 resources = [
