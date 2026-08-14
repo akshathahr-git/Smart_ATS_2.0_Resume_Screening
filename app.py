@@ -956,22 +956,22 @@ with tabs[1]:
                 st.session_state.editing_jd = selected_jd_title
                 st.rerun()
     
-    # JD Text Area
+        # JD Text Area
     if selected_jd_title != "📝 Paste New JD" and selected_jd_title in jds:
         jd_text = jds[selected_jd_title]
         st.info(f"📄 Using saved JD: **{selected_jd_title}**")
     else:
         jd_text = ""
-    
-    # Show JD in text area (editable)
+
+    # Show JD in text area (editable) - UNIQUE KEY FIXED
     jd = st.text_area(
         "Job Description",
         value=jd_text if selected_jd_title != "📝 Paste New JD" else "",
         height=200,
         placeholder="Paste the complete job description here...",
-        key="jd_input"
+        key=f"jd_input_{selected_jd_title}"  # ← UNIQUE key per JD
     )
-    
+
     # Save/Update JD Buttons
     if selected_jd_title != "📝 Paste New JD":
         col1, col2, col3 = st.columns([1, 1, 1])
@@ -1000,7 +1000,7 @@ with tabs[1]:
                 st.rerun()
             else:
                 st.warning("⚠️ Please enter both JD content and title")
-    
+
     if st.button("🚀 Analyze Resumes", use_container_width=True, type="primary"):
         if not jd:
             st.warning("⚠️ Please paste a job description first.")
@@ -1010,6 +1010,19 @@ with tabs[1]:
             with st.spinner("Analyzing resumes... Please wait..."):
                 results = []
                 seen_hashes = {}
+                
+                # Extract technical skills from JD
+                jd_skills = extract_technical_skills(jd)
+                
+                # ✅ Non-technical skills to filter out
+                NON_TECHNICAL = {
+                    "excel", "powerpoint", "ms office", "microsoft office", "word", "outlook",
+                    "communication", "team management", "team player", "quick learner",
+                    "adaptable", "good communication", "leadership", "problem solving",
+                    "time management", "organizational skills", "interpersonal skills",
+                    "presentation skills", "verbal communication", "basic computer knowledge",
+                    "computer knowledge", "soft skills", "management skills", "office"
+                }
                 
                 # Extract technical skills from JD
                 jd_skills = extract_technical_skills(jd)
