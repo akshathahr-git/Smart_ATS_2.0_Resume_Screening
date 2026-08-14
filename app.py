@@ -904,39 +904,38 @@ with tabs[0]:
         st.info("ℹ️ No resumes uploaded yet.")
     
     st.subheader("📁 Uploaded Resumes")
-if anim_search: 
-    st_lottie(anim_search, height=100, key="lottie_search")
+    if anim_search: 
+        st_lottie(anim_search, height=100, key="lottie_search")
 
-if stored_files:
-    for f in stored_files[:10]:
-        file_path = os.path.join(UPLOAD_DIR, f)
-        
-        # Expandable card with view option
-        with st.expander(f"📄 {f}"):
-            # Read and display file content
-            try:
-                with open(file_path, "r", encoding="utf-8") as file:
-                    content = file.read()
-                    st.text_area("Resume Content", content, height=200, key=f"view_{f}")
-            except:
-                # For PDF files - show download option
-                st.warning("📄 PDF file - Click download to view")
+    if stored_files:
+        # ✅ Show ALL files (removed [:10] limit)
+        for f in stored_files:
+            file_path = os.path.join(UPLOAD_DIR, f)
             
-            # Download button
-            with open(file_path, "rb") as file:
-                st.download_button(
-                    label="📥 Download Resume",
-                    data=file,
-                    file_name=f,
-                    mime="text/plain" if f.endswith('.txt') else "application/pdf",
-                    key=f"download_{f}",
-                    use_container_width=True
-                )
-    
-    if len(stored_files) > 10:
-        st.info(f"... and {len(stored_files) - 10} more files")
-else:
-    st.info("ℹ️ No resumes uploaded yet.")
+            # Expandable card with view option
+            with st.expander(f"📄 {f}"):
+                # Read and display file content
+                try:
+                    with open(file_path, "r", encoding="utf-8") as file:
+                        content = file.read()
+                        st.text_area("Resume Content", content, height=200, key=f"view_{f}")
+                except:
+                    # For PDF files - show download option
+                    st.warning("📄 PDF file - Click download to view")
+                
+                # Download button
+                with open(file_path, "rb") as file:
+                    st.download_button(
+                        label="📥 Download Resume",
+                        data=file,
+                        file_name=f,
+                        mime="text/plain" if f.endswith('.txt') else "application/pdf",
+                        key=f"download_{f}",
+                        use_container_width=True
+                    )
+        # ✅ REMOVED the "... and X more files" message
+    else:
+        st.info("ℹ️ No resumes uploaded yet.")
 
    # Tab 2: Rank & Analyze - SMART ATS PURE SKILL MATCH
 with tabs[1]:
