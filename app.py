@@ -1051,23 +1051,29 @@ with tabs[1]:
                     # ✅ Filter out non-technical skills
                     filtered_resume_skills = {skill for skill in resume_skills if skill.lower() not in NON_TECHNICAL}
                     
-                    # Calculate technical skills match using filtered skills
+                                        # Calculate technical skills match
                     matched_skills = jd_skills.intersection(filtered_resume_skills)
                     missing_skills = jd_skills - filtered_resume_skills
-                    
+
                     # Technical Skills Match % (40%)
                     tech_match_pct = int((len(matched_skills) / max(1, len(jd_skills))) * 100)
-                    
+
                     # Experience Level (30%)
                     exp_level = predict_experience_level(text)
-                    exp_match = 100  # Default
-                    
+                    exp_map = {"Fresher": 50, "Junior": 70, "Mid-level": 85, "Senior": 100}
+                    exp_match = exp_map.get(exp_level, 70)
+
                     # Role Match (20%) - Use filtered skills
                     role_pred = classify_role_from_skills(filtered_resume_skills)
-                    role_match = 100  # Default
-                    
+                    if "Data Scientist" in role_pred or "Machine Learning" in role_pred:
+                        role_match = 100
+                    elif "Data Analyst" in role_pred or "Software Engineer" in role_pred:
+                        role_match = 70
+                    else:
+                        role_match = 50
+
                     # Education (10%)
-                    edu_score = 50  # Default
+                    edu_score = 50
                     edu_keywords = ["phd", "doctorate", "master", "m.sc", "m.s", "bachelor", "b.sc", "b.s", "b.tech", "m.tech", "mca", "bca"]
                     for keyword in edu_keywords:
                         if keyword in text.lower():
@@ -1078,14 +1084,20 @@ with tabs[1]:
                             elif "bachelor" in text.lower() or "b.sc" in text.lower() or "b.tech" in text.lower():
                                 edu_score = 60
                             break
-                    
+
                     # Calculate Total Score (Weighted)
                     total_score = int(
-                        (tech_match_pct * 0.4) + 
-                        (exp_match * 0.3) + 
-                        (role_match * 0.2) + 
+                        (tech_match_pct * 0.4) +
+                        (exp_match * 0.3) +
+                        (role_match * 0.2) +
                         (edu_score * 0.1)
                     )
+
+                    # Name extraction
+                    name = extract_name(text) or f.split("_", 1)[-1]
+                    email = extract_email(text) or ""
+                    phone = extract_phone(text) or ""
+                    
                     
                     # Name extraction
                     name = extract_name(text) or f.split("_", 1)[-1]
