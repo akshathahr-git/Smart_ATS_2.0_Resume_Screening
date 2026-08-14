@@ -101,69 +101,6 @@ def extract_technical_skills(text):
             found_skills.add(skill)
     return found_skills
 
-# ---------- role classification from skills ----------
-def classify_role_from_skills(skills):
-    """Classify role based on technical skills found in resume"""
-    if not skills:
-        return "General/Other"
-    
-    # Non-technical skills to ignore
-    NON_TECHNICAL = {
-        "communication", "team management", "ms office", "excel", "powerpoint", 
-        "basic computer knowledge", "team player", "quick learner", "adaptable",
-        "good communication", "leadership", "problem solving", "time management",
-        "organizational skills", "interpersonal skills", "microsoft office",
-        "word", "outlook", "presentation skills", "verbal communication"
-    }
-    
-    # Filter out non-technical skills
-    technical_skills = []
-    for skill in skills:
-        skill_lower = skill.lower()
-        if skill_lower not in NON_TECHNICAL:
-            technical_skills.append(skill_lower)
-    
-    # If no technical skills, return General/Other
-    if not technical_skills:
-        return "General/Other"
-    
-    ROLE_KEYWORDS = {
-        "Python Developer": ["python", "django", "flask", "fastapi"],
-        "Java Developer": ["java", "spring", "hibernate", "maven"],
-        "Frontend Developer": ["react", "angular", "vue", "html", "css", "javascript"],
-        "Full Stack Developer": ["react", "node", "python", "java", "javascript", "html", "css"],
-        "Data Scientist": ["python", "r", "tensorflow", "pytorch", "sklearn", "pandas", "numpy", "machine learning", "deep learning", "nlp", "statistics"],
-        "Data Analyst": ["sql", "tableau", "power bi", "excel", "python", "r", "data analysis"],
-        "Machine Learning Engineer": ["tensorflow", "pytorch", "keras", "scikit-learn", "ml", "deep learning"],
-        "Data Engineer": ["spark", "hadoop", "etl", "airflow", "kafka", "python", "sql"],
-        "DevOps Engineer": ["docker", "kubernetes", "jenkins", "aws", "azure", "terraform", "ci/cd"],
-        "Cloud Engineer": ["aws", "azure", "gcp", "docker", "kubernetes", "terraform"],
-        "AI Researcher": ["python", "tensorflow", "pytorch", "nlp", "deep learning", "research"],
-        "Statistician": ["r", "python", "statistics", "regression", "spss", "sas"],
-        "Business Analyst": ["excel", "sql", "power bi", "tableau", "business analysis", "requirements"],
-        "Software Engineer": ["python", "java", "c++", "javascript", "git", "sql"],
-        "QA Engineer": ["selenium", "junit", "pytest", "testng", "cypress"],
-        "Backend Developer": ["python", "java", "node", "django", "flask", "spring", "sql"],
-    }
-    
-    scores = {}
-    for role, keywords in ROLE_KEYWORDS.items():
-        score = 0
-        for kw in keywords:
-            for skill in technical_skills:
-                if kw.lower() in skill or skill in kw.lower():
-                    score += 1
-                    break
-        scores[role] = score
-    
-    # Get role with highest score
-    best_role = max(scores, key=lambda k: scores[k])
-    
-    # If the best score is 0, return General/Other
-    if scores[best_role] == 0:
-        return "General/Other"
-    
-    return best_role
 
 # Download NLTK resources
 resources = [
@@ -1486,8 +1423,4 @@ st.markdown("""
     <b>HireVision AI</b> — Smart ATS System • <span style='color: #D4AF37;'>Professional Edition</span><br>
     <small>© 2024 All Rights Reserved • For demonstration purposes only</small>
 </div>
-<<<<<<< HEAD
 """, unsafe_allow_html=True)
-=======
-""", unsafe_allow_html=True)
->>>>>>> 83764f39e1a3e7c8b6f25a1df51fbee5aa7c2e69
