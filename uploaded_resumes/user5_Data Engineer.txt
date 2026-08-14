@@ -1,0 +1,38 @@
+Name: Arjun Nair
+Email: arjun.nair@email.com
+Phone: +91-21098-76543
+Location: Chennai, India
+
+PROFESSIONAL SUMMARY
+Data Engineer with 4 years of experience building scalable ETL pipelines and data processing systems. Expertise in Spark, AWS, and big data technologies. Focused on data quality and performance optimization.
+
+TECHNICAL SKILLS
+- Big Data: Apache Spark, Hadoop, Hive
+- Data Processing: ETL, Airflow, DBT
+- Programming: Python, Scala, Java
+- Cloud: AWS (Redshift, S3, Glue), GCP
+- Databases: PostgreSQL, Cassandra, Redshift
+- Streaming: Kafka, Kinesis, Flink
+
+PROFESSIONAL EXPERIENCE
+Data Engineer | DataFlowX | 2021-Present
+- Built scalable ETL pipelines processing 10TB+ data daily
+- Reduced ETL runtime by 45% with Spark optimization
+- Implemented data quality checks using Great Expectations
+
+Data Engineer | DataWorks | 2019-2021
+- Developed data ingestion pipelines using Airflow
+- Designed data warehouse on AWS Redshift
+
+EDUCATION
+B.Tech in Information Technology | Amrita University | 2019
+Specialization in Big Data Analytics
+
+PROJECTS
+- Real-time Data Processing: Kafka + Spark Streaming
+- Data Lake Architecture: AWS S3 + Glue + Athena
+
+CERTIFICATIONS
+- AWS Certified Big Data - Specialty
+- Databricks Certified Developer
+- Apache Spark Certification

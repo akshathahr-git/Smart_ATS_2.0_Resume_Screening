@@ -1,0 +1,11 @@
+Akshatha H R
+Data Scientist
+Email: akshathahr2005@gmail.com
+
+Objective: To contribute to innovative projects leveraging my technical skills and problem-solving ability in data science and machine learning.
+
+Skills: Python, Pandas, NumPy, SQL, Scikit-Learn, TensorFlow, PyTorch, Tableau, Machine Learning, Deep Learning, NLP, Statistics, AWS
+
+Experience: Data Scientist at ABC Tech Solutions, building predictive models and dashboards. Data Analyst at XYZ Analytics, analyzing large datasets and automating reporting processes.
+
+Education: M.Sc. in Data Science, IIT Bangalore, 2019. B.Sc. in Computer Science, Bangalore University, 2017.

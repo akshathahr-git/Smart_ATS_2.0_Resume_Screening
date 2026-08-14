@@ -1,0 +1,51 @@
+Name: Sameer Desai
+Email: sameer.desai@email.com
+Phone: +91-98765-01234
+Location: Pune, India
+
+PROFESSIONAL SUMMARY
+Recent Computer Science graduate with strong foundation in machine learning, data science, and Python programming. Passionate about data-driven problem solving and ready to contribute to real-world projects.
+
+TECHNICAL SKILLS
+- Programming: Python, SQL, R
+- ML: Scikit-learn, Pandas, NumPy
+- Visualization: Matplotlib, Seaborn
+- Databases: SQLite, PostgreSQL
+- Tools: Git, Jupyter, VS Code
+- Core: Statistics, Linear Algebra, Probability
+
+EDUCATION
+B.Tech in Computer Science | Pune University | 2023
+CGPA: 8.7/10
+
+PROJECTS
+1. Credit Card Fraud Detection
+   - Implemented anomaly detection using Isolation Forest
+   - Achieved 95% precision on test data
+   - Tools: Python, Scikit-learn, Pandas
+
+2. Customer Segmentation Analysis
+   - Performed clustering using K-Means and Hierarchical
+   - Identified 5 distinct customer segments
+   - Tools: Python, Tableau, Pandas
+
+3. Restaurant Recommendation System
+   - Built collaborative filtering recommendation engine
+   - Deployed as web application using Flask
+   - Tools: Python, Flask, Pandas, NumPy
+
+INTERNSHIPS
+Data Science Intern | TechAnalytics Inc. | 2022
+- Assisted in building predictive models
+- Performed exploratory data analysis
+- Created reports and presentations
+
+CERTIFICATIONS
+- Google Data Analytics Professional Certificate
+- Python for Data Science - NPTEL
+- Statistics for Data Science - Coursera
+
+SKILLS HIGHLIGHT
+- Strong analytical and problem-solving
+- Good communication and presentation
+- Team collaboration and agile methodology

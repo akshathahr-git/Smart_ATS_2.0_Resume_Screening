@@ -1,0 +1,35 @@
+Name: Harsha Patil
+Email: harsha.patil@email.com
+Phone: +91-43210-98765
+Location: Hyderabad, India
+
+PROFESSIONAL SUMMARY
+Cloud Engineer with 4 years of experience in designing, deploying, and managing cloud infrastructure. Expert in AWS, GCP, and containerization technologies. Strong focus on automation and DevOps practices.
+
+TECHNICAL SKILLS
+- Cloud: AWS (EC2, S3, EKS, Lambda), GCP
+- Containerization: Docker, Kubernetes
+- Automation: Terraform, Ansible, CloudFormation
+- CI/CD: Jenkins, GitLab CI, GitHub Actions
+- Monitoring: Prometheus, Grafana, CloudWatch
+- Scripting: Python, Bash, Shell
+
+PROFESSIONAL EXPERIENCE
+Cloud Engineer | SkyNet Technologies | 2021-Present
+- Maintained 100+ containerized applications on AWS EKS
+- Implemented CI/CD pipelines reducing deployment time by 70%
+- Managed multi-cloud infrastructure on AWS and GCP
+- Reduced cloud costs by 30% through optimization
+
+Cloud Engineer | DataCloud | 2019-2021
+- Designed disaster recovery solutions on AWS
+- Automated infrastructure provisioning with Terraform
+
+EDUCATION
+B.E. in Information Science | PES University | 2019
+AWS Certified Solutions Architect | 2020
+
+CERTIFICATIONS
+- AWS Certified DevOps Engineer
+- Certified Kubernetes Administrator (CKA)
+- Google Cloud Certified - Associate Cloud Engineer

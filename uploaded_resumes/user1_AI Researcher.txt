@@ -1,0 +1,38 @@
+Name: Priya Menon
+Email: priya.menon@email.com
+Phone: +91-54321-09876
+Location: Bangalore, India
+
+PROFESSIONAL SUMMARY
+AI Researcher with 3 years of research experience in NLP, Transformers, and deep learning. Published 5 papers in top-tier conferences. Ph.D. in Artificial Intelligence with focus on language models.
+
+TECHNICAL SKILLS
+- Programming: Python, R, Julia
+- ML/DL: PyTorch, TensorFlow, HuggingFace
+- NLP: Transformers, BERT, GPT-3, LLM, LangChain
+- Cloud: AWS, GCP
+- Research: LaTeX, Overleaf, Zotero
+- Version Control: Git, GitHub
+
+PROFESSIONAL EXPERIENCE
+AI Researcher | VisionTech Research | 2021-Present
+- Developed novel transformer architectures for document classification
+- Published 3 papers in ACL and EMNLP conferences
+- Built LLM-powered chatbots using LangChain
+
+Research Intern | IISc Bangalore | 2020-2021
+- Researched efficient fine-tuning of BERT
+- Published paper on low-resource NLP
+
+EDUCATION
+M.Tech in Artificial Intelligence | IISc Bangalore | 2021
+B.Tech in Computer Science | NIT Trichy | 2018
+
+RESEARCH PUBLICATIONS
+- "Efficient Fine-tuning of Transformers" - ACL 2022
+- "Low-resource Named Entity Recognition" - EMNLP 2021
+- "Language Models for Indian Languages" - NAACL 2022
+
+CERTIFICATIONS
+- Deep Learning Specialization - Coursera
+- NLP with Transformers - HuggingFace

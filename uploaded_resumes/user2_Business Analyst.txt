@@ -1,0 +1,34 @@
+Name: Neha Joshi
+Email: neha.joshi@email.com
+Phone: +91-32109-87654
+Location: Bangalore, India
+
+PROFESSIONAL SUMMARY
+Business Analyst with 3 years of experience in data-driven decision making, requirements gathering, and stakeholder management. Expert in Excel, Power BI, and business intelligence tools.
+
+TECHNICAL SKILLS
+- Business Analysis: Requirements Gathering, Process Mapping
+- Data Viz: Power BI, Tableau
+- Tools: Excel (Advanced), PowerPoint
+- Databases: SQL, PostgreSQL
+- Domain: Banking, Finance, Retail
+- Certifications: CBAP, PMI-PBA
+
+PROFESSIONAL EXPERIENCE
+Business Analyst | FinEdge Consulting | 2021-Present
+- Analyzed KPIs generating 15% improvement in revenue
+- Managed stakeholder communication for 5+ projects
+- Created executive dashboards in Power BI
+
+Analyst | MarketInsights | 2019-2021
+- Conducted market research and competitor analysis
+- Developed financial models in Excel
+
+EDUCATION
+MBA in Business Analytics | Christ University | 2021
+B.Com | Bangalore University | 2018
+
+CERTIFICATIONS
+- Certified Business Analysis Professional (CBAP)
+- Microsoft Power BI Data Analyst
+- Six Sigma Green Belt

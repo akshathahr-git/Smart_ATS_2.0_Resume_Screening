@@ -1,0 +1,33 @@
+Name: Sneha Rao
+Email: sneha.rao@email.com
+Phone: +91-76543-21098
+Location: Mumbai, India
+
+PROFESSIONAL SUMMARY
+Data Analyst with 3 years of experience in turning complex data into actionable insights. Expert in SQL, Tableau, and business intelligence. Strong analytical skills with attention to detail.
+
+TECHNICAL SKILLS
+- Databases: SQL, PostgreSQL, MySQL
+- Data Viz: Tableau, Power BI, Looker
+- Tools: Excel, Google Sheets, Alteryx
+- Python: Pandas, NumPy, Matplotlib
+- Reporting: Crystal Reports, SSRS
+
+PROFESSIONAL EXPERIENCE
+Data Analyst | Insights Corp. | 2021-Present
+- Created 50+ dashboards for executive reporting
+- Analyzed sales data to increase revenue by 25%
+- Automated reporting process saving 20+ hours/week
+
+Business Analyst | FinTech Solutions | 2019-2021
+- Performed market analysis for new products
+- Created KPI dashboards for management
+
+EDUCATION
+B.Sc. in Statistics | Bangalore University | 2019
+MBA in Business Analytics | Christ University | 2022
+
+CERTIFICATIONS
+- Tableau Desktop Specialist
+- Microsoft Power BI Data Analyst
+- Google Data Analytics Certificate

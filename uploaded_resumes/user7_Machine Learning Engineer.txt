@@ -1,0 +1,39 @@
+Name: Rohit Kumar
+Email: rohit.kumar@email.com
+Phone: +91-87654-32109
+Location: Chennai, India
+
+PROFESSIONAL SUMMARY
+Machine Learning Engineer with 4 years of experience in designing, developing, and deploying ML models at scale. Specialized in computer vision, NLP, and MLOps.
+
+TECHNICAL SKILLS
+- Programming: Python, C++, Java
+- ML/DL: TensorFlow, PyTorch, Keras, OpenCV
+- NLP: Transformers, BERT, GPT, HuggingFace
+- Cloud: AWS, GCP, Azure
+- MLOps: Docker, Kubernetes, MLflow, Kubeflow
+- Deployment: Flask, FastAPI, REST APIs
+
+PROFESSIONAL EXPERIENCE
+ML Engineer | AI Solutions Inc. | 2021-Present
+- Deployed 10+ deep learning models in production
+- Built computer vision system with 97% accuracy
+- Implemented CI/CD pipeline for ML models
+- Reduced inference latency by 45%
+
+ML Engineer | DataTech | 2019-2021
+- Developed NLP models for sentiment analysis
+- Optimized model performance using TensorRT
+
+EDUCATION
+B.Tech in Computer Science | NIT Trichy | 2019
+Minor in Artificial Intelligence
+
+PROJECTS
+- Object Detection System: YOLOv5 with 92% mAP
+- Language Translation Model: Transformer with 85% BLEU
+
+CERTIFICATIONS
+- Google Professional ML Engineer
+- AWS Solutions Architect - Associate
+- NVIDIA Deep Learning Institute Certified

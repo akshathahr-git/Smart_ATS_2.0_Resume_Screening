@@ -1,0 +1,41 @@
+Name: Dr. Ananya Sharma
+Email: ananya.sharma@email.com
+Phone: +91-98765-43210
+Location: Bangalore, India
+
+PROFESSIONAL SUMMARY
+Senior Data Scientist with 6+ years of experience in building predictive models and machine learning solutions. Expertise in Python, SQL, and cloud technologies. Led teams to deliver data-driven solutions for Fortune 500 clients.
+
+TECHNICAL SKILLS
+- Programming: Python, R, SQL, Java
+- ML/DL: Scikit-learn, TensorFlow, PyTorch, Keras
+- Data Viz: Tableau, Power BI, Matplotlib, Seaborn
+- Cloud: AWS (SageMaker, EC2, S3), GCP
+- Databases: PostgreSQL, MySQL, MongoDB
+- Tools: Git, Docker, Jupyter, Airflow, MLflow
+
+PROFESSIONAL EXPERIENCE
+Senior Data Scientist | TechCorp Inc. | 2021-Present
+- Led development of 15+ ML models achieving 95% accuracy
+- Reduced operational costs by 30% through predictive maintenance
+- Built end-to-end ML pipelines on AWS SageMaker
+- Mentored 5 junior data scientists
+
+Data Scientist | DataAnalytics Ltd. | 2018-2021
+- Developed recommendation engine serving 1M+ users
+- Created interactive dashboards in Tableau
+- Performed A/B testing for product features
+
+EDUCATION
+Ph.D. in Computer Science | IIT Bombay | 2018
+M.Sc. in Data Science | IISc Bangalore | 2015
+B.Tech in Computer Science | NIT Trichy | 2013
+
+PROJECTS
+- Predictive Maintenance System: Reduced downtime by 40%
+- Customer Churn Prediction: Achieved 92% accuracy
+
+CERTIFICATIONS
+- AWS Certified Machine Learning - Specialty
+- TensorFlow Developer Certificate
+- Certified Data Scientist (CDS)
