@@ -938,8 +938,7 @@ if stored_files:
 else:
     st.info("ℹ️ No resumes uploaded yet.")
 
-    # Tab 2: Rank & Analyze - COMPLETELY UPDATED
-# Tab 2: Rank & Analyze - UPDATED with Non-Technical Filter
+   # Tab 2: Rank & Analyze - SMART ATS PURE SKILL MATCH
 with tabs[1]:
     st.subheader("🎯 Resume Ranking & Analysis")
     
@@ -1023,8 +1022,7 @@ with tabs[1]:
                     "adaptable", "good communication", "leadership", "problem solving",
                     "time management", "organizational skills", "interpersonal skills",
                     "presentation skills", "verbal communication", "basic computer knowledge",
-                    "computer knowledge", "soft skills", "management skills", "office",
-                    "power bi", "tableau", "sql", "python", "r", "statistics", "data analysis"
+                    "computer knowledge", "soft skills", "management skills", "office"
                 }
                 
                 for f in stored_files:
@@ -1051,60 +1049,24 @@ with tabs[1]:
                     # ✅ Filter out non-technical skills
                     filtered_resume_skills = {skill for skill in resume_skills if skill.lower() not in NON_TECHNICAL}
                     
-                                        # Calculate technical skills match
+                    # Calculate matched and missing skills
                     matched_skills = jd_skills.intersection(filtered_resume_skills)
                     missing_skills = jd_skills - filtered_resume_skills
-
-                    # Technical Skills Match % (40%)
+                    
+                    # ✅ PURE SKILL MATCH PERCENTAGE (No role, experience, or education factors)
                     tech_match_pct = int((len(matched_skills) / max(1, len(jd_skills))) * 100)
-
-                    # Experience Level (30%)
-                    exp_level = predict_experience_level(text)
-                    exp_map = {"Fresher": 50, "Junior": 70, "Mid-level": 85, "Senior": 100}
-                    exp_match = exp_map.get(exp_level, 70)
-
-                    # Role Match (20%) - Use filtered skills
+                    
+                    # Total Score = Only Technical Skills Match (100% skill-based)
+                    total_score = tech_match_pct
+                    
+                    # Name extraction
+                    name = extract_name(text) or f.split("_", 1)[-1]
+                    email = extract_email(text) or ""
+                    phone = extract_phone(text) or ""
+                    
+                    # Role and Experience (for display purposes only)
                     role_pred = classify_role_from_skills(filtered_resume_skills)
-                    if "Data Scientist" in role_pred or "Machine Learning" in role_pred:
-                        role_match = 100
-                    elif "Data Analyst" in role_pred or "Software Engineer" in role_pred:
-                        role_match = 70
-                    else:
-                        role_match = 50
-
-                    # Education (10%)
-                    edu_score = 50
-                    edu_keywords = ["phd", "doctorate", "master", "m.sc", "m.s", "bachelor", "b.sc", "b.s", "b.tech", "m.tech", "mca", "bca"]
-                    for keyword in edu_keywords:
-                        if keyword in text.lower():
-                            if "phd" in text.lower() or "doctorate" in text.lower():
-                                edu_score = 100
-                            elif "master" in text.lower() or "m.sc" in text.lower() or "m.tech" in text.lower():
-                                edu_score = 80
-                            elif "bachelor" in text.lower() or "b.sc" in text.lower() or "b.tech" in text.lower():
-                                edu_score = 60
-                            break
-
-                    # Calculate Total Score (Weighted)
-                    total_score = int(
-                        (tech_match_pct * 0.4) +
-                        (exp_match * 0.3) +
-                        (role_match * 0.2) +
-                        (edu_score * 0.1)
-                    )
-
-                    # Name extraction
-                    name = extract_name(text) or f.split("_", 1)[-1]
-                    email = extract_email(text) or ""
-                    phone = extract_phone(text) or ""
-                    
-                    
-                    # Name extraction
-                    name = extract_name(text) or f.split("_", 1)[-1]
-                    email = extract_email(text) or ""
-                    phone = extract_phone(text) or ""
-                    
-                    # Salary estimation
+                    exp_level = predict_experience_level(text)
                     salary = estimate_salary(role_pred, exp_level)
                     
                     # Scam flag
@@ -1197,7 +1159,7 @@ with tabs[1]:
                     
                     st.pyplot(fig)
                 
-                # Display results table without Score and Words columns
+                # Display results table
                 st.subheader("📋 Detailed Results")
                 display_df = df[['Name', 'Role', 'Match %', 'Email', 'ExpLevel', 'Salary', 'Pages', 'Matched Skills', 'Missing Skills']]
                 st.dataframe(display_df, use_container_width=True, hide_index=True)
