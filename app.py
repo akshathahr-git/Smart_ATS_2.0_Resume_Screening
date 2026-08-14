@@ -1486,4 +1486,8 @@ st.markdown("""
     <b>HireVision AI</b> — Smart ATS System • <span style='color: #D4AF37;'>Professional Edition</span><br>
     <small>© 2024 All Rights Reserved • For demonstration purposes only</small>
 </div>
+<<<<<<< HEAD
 """, unsafe_allow_html=True)
+=======
+""", unsafe_allow_html=True)
+>>>>>>> 83764f39e1a3e7c8b6f25a1df51fbee5aa7c2e69
