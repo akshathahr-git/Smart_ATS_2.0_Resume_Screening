@@ -46,6 +46,22 @@ An intelligent recruitment system that analyzes resumes, extracts candidate skil
 | **Animations** | Streamlit-Lottie |
 
 ---
+## 📧 SMTP Email Configuration
+
+To send emails from the application:
+
+1. **Create a Gmail App Password:**
+   - Go to Google Account → Security → App Passwords
+   - Select "Mail" and "Windows Computer"
+   - Click Generate and copy the 16-character password
+
+2. **Add to the app:**
+   - Enter your Gmail and the app password in the "Send Feedback" tab
+   - Or add to `.streamlit/secrets.toml`:
+   ```toml
+   SMTP_USER = "your-email@gmail.com"
+   SMTP_PASSWORD = "your-app-password"
+   
 
 ## 📦 Installation
 
