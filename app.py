@@ -762,46 +762,6 @@ st.markdown(
     unsafe_allow_html=True
 )
 
-# ---------- role classification from skills ----------
-def classify_role_from_skills(skills):
-    """Classify role based on technical skills found in resume"""
-    if not skills:
-        return "General/Other"
-    
-    ROLE_KEYWORDS = {
-        "Python Developer": ["python", "django", "flask", "fastapi"],
-        "Java Developer": ["java", "spring", "hibernate", "maven"],
-        "Frontend Developer": ["react", "angular", "vue", "html", "css", "javascript"],
-        "Full Stack Developer": ["react", "node", "python", "java", "javascript", "html", "css"],
-        "Data Scientist": ["python", "r", "tensorflow", "pytorch", "sklearn", "pandas", "numpy"],
-        "Data Analyst": ["sql", "tableau", "power bi", "excel", "python", "r"],
-        "Machine Learning Engineer": ["tensorflow", "pytorch", "keras", "scikit-learn", "ml"],
-        "Data Engineer": ["spark", "hadoop", "etl", "airflow", "kafka", "python", "sql"],
-        "DevOps Engineer": ["docker", "kubernetes", "jenkins", "aws", "azure", "terraform"],
-        "Cloud Engineer": ["aws", "azure", "gcp", "docker", "kubernetes", "terraform"],
-        "AI Researcher": ["python", "tensorflow", "pytorch", "nlp", "deep learning"],
-        "Statistician": ["r", "python", "statistics", "regression", "spss", "sas"],
-        "Business Analyst": ["excel", "sql", "power bi", "tableau", "business analysis"],
-        "Software Engineer": ["python", "java", "c++", "javascript", "git", "sql"],
-        "QA Engineer": ["selenium", "junit", "pytest", "testng", "cypress"],
-        "Backend Developer": ["python", "java", "node", "django", "flask", "spring", "sql"],
-        "Full Stack Developer": ["react", "angular", "vue", "node", "python", "java", "sql"],
-    }
-    
-    scores = {}
-    for role, keywords in ROLE_KEYWORDS.items():
-        score = 0
-        for kw in keywords:
-            for skill in skills:
-                if kw.lower() in skill.lower() or skill.lower() in kw.lower():
-                    score += 1
-                    break
-        scores[role] = score
-    
-    # Get role with highest score
-    best_role = max(scores, key=lambda k: scores[k])
-    return best_role if scores[best_role] > 0 else "General/Other" 
-
 # ---------- HR Panel ----------
 if st.session_state["role"] == "HR":
     st.header("👔 HR Dashboard")
